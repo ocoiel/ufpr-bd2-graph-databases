@@ -1,0 +1,29 @@
+.env
+.env.local
+.env*.local
+
+# datasets (gigabytes — baixa via script)
+data/*.dump
+data/*.zip
+data/neo4j.dump
+data/neo4j/
+data/postgres/
+
+# build / cache
+node_modules/
+.next/
+.turbo/
+.tsbuildinfo
+next-env.d.ts
+
+# OS / editor
+.DS_Store
+*.log
+.vscode/
+.idea/
+.cursor/
+
+# playwright
+playwright-report/
+test-results/
+/tmp/app-*.png
