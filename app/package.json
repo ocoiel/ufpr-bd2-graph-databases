@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "mirror:pg": "node --env-file=../.env scripts/mirror-to-postgres.mjs",
+    "bench": "node --env-file=../.env scripts/benchmark.mjs"
   },
   "dependencies": {
     "clsx": "^2.1.1",
