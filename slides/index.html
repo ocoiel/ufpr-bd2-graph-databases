@@ -205,6 +205,7 @@
       <div style="margin-top:.4em; display:flex; flex-direction:column; gap:.4em; font-size:clamp(.9rem,1.3vw,1.1rem); color:var(--mut)">
         <span><b style="color:var(--sky)">Relacional:</b> "quantas estações tem a linha?" → conta</span>
         <span><b style="color:var(--emerald)">Grafo:</b> "qual a rota de A até B?" → o <b style="color:var(--ink)">caminho</b></span>
+        <span><b style="color:var(--violet)">LinkedIn:</b> 1º, 2º, 3º grau = <b style="color:var(--ink)">distância em hops</b></span>
       </div>
     </div>
   </div>
@@ -220,7 +221,7 @@
     </div>
     <div class="cols center">
       <div>
-        <span class="tag sql">RELACIONAL — 3 tabelas + 2 JOINs</span>
+        <span class="tag sql">SQL · relacional — 3 tabelas + 2 JOINs</span>
         <pre class="sql" style="font-size:clamp(.85rem,1.35vw,1.22rem); line-height:1.75; padding:1.2em 1.4em"><span class="k">SELECT</span> e.nome
   <span class="k">FROM</span> pessoas p
   <span class="k">JOIN</span> trabalha_em t <span class="k">ON</span> t.pessoa_id = p.id
@@ -228,7 +229,7 @@
  <span class="k">WHERE</span> p.nome = <span class="s">'Ana'</span>;</pre>
       </div>
       <div>
-        <span class="tag cy">GRAFO — o padrão é o desenho</span>
+        <span class="tag cy">Cypher · grafo — o desenho é a query</span>
         <pre style="font-size:clamp(.85rem,1.35vw,1.22rem); line-height:1.75; padding:1.2em 1.4em"><span class="k">MATCH</span> (p<span class="f">:Pessoa</span> {<span class="n">nome</span>:<span class="s">'Ana'</span>})
       <span class="k">-[:TRABALHA_EM]-></span>
       (e<span class="f">:Empresa</span>)
@@ -239,37 +240,9 @@
   </div>
 </section>
 
-<!-- 04 · OLÁ MUNDO + CYPHER -->
-<section class="slide" data-notes="<h3>Olá mundo + Cypher · 1min30 · pode fazer AO VIVO (localhost:7474)</h3><p>Cypher é a ‘SQL dos grafos’: declarativa (diz o quê, não o como) e <b>ASCII-art</b> — parênteses são nós, setas são relacionamentos. O código parece o diagrama.</p><p>Verbos: CREATE=INSERT, MATCH…RETURN=SELECT…FROM, WHERE=WHERE, MERGE=INSERT ON CONFLICT.</p><p>Detalhe que impressiona: desde 2024 virou padrão <b>ISO — o GQL</b>, mesmo comitê do SQL.</p><p>Ao vivo: cole o CREATE, depois o MATCH, mostre a bolinha e a seta. (Testado: funciona.)</p>">
-  <h2><span class="num">04</span>"Olá, mundo" em Cypher</h2>
-  <div class="body cols center">
-    <div>
-      <p class="lead">A <b>"SQL dos grafos"</b>: declarativa e <b>ASCII-art</b> — <code style="font-family:var(--mono);color:var(--amber)">()</code> é nó, <code style="font-family:var(--mono);color:var(--amber)">-[]-></code> é relação. <b>CREATE</b> grava, <b>MATCH…RETURN</b> consulta.</p>
-      <table style="margin-top:.8em">
-        <thead><tr><th>Cypher</th><th>SQL equivalente</th></tr></thead>
-        <tbody>
-          <tr><td class="mono" style="color:var(--violet)">CREATE</td><td class="mono">INSERT</td></tr>
-          <tr><td class="mono" style="color:var(--violet)">MATCH … RETURN</td><td class="mono">SELECT … FROM</td></tr>
-        </tbody>
-      </table>
-      <p class="note">Padrão <b style="color:var(--mut)">ISO desde 2024</b> — o GQL, mesmo comitê do SQL.</p>
-    </div>
-    <div>
-      <pre><span class="c">// 1 · criar</span>
-<span class="k">CREATE</span> (ana<span class="f">:Pessoa</span>  {<span class="n">nome</span>:<span class="s">'Ana'</span>}),
-       (acme<span class="f">:Empresa</span> {<span class="n">nome</span>:<span class="s">'ACME'</span>}),
-       (ana)<span class="k">-[:TRABALHA_EM]-></span>(acme);
-
-<span class="c">// 2 · consultar (o código = o diagrama)</span>
-<span class="k">MATCH</span> (p<span class="f">:Pessoa</span>)<span class="k">-[:TRABALHA_EM]-></span>(e<span class="f">:Empresa</span>)
-<span class="k">RETURN</span> p.nome, e.nome;</pre>
-    </div>
-  </div>
-</section>
-
-<!-- 05 · OS PAPERS (IMPACTO GLOBAL) -->
+<!-- 04 · OS PAPERS (IMPACTO GLOBAL) -->
 <section class="slide" data-notes="<h3>Os Papers · 1min30 · o gancho que cativa</h3><p>O maior vazamento de dados da história do jornalismo. <b>11,5 milhões de documentos, 2,6 TB</b>, detalhando <b>214.488 empresas offshore</b>, com docs desde os anos 1970.</p><p>Veio de uma fonte anônima, ‘John Doe’ (‘minha vida está em perigo’), que entregou ao jornal alemão Süddeutsche Zeitung → ICIJ. <b>107 veículos, 80 países, mais de 1 ano</b> de apuração.</p><p>A Mossack Fonseca criou +300 mil empresas. Memo interno: ‘95% do nosso trabalho é vender veículos pra evitar impostos’. Consequências: derrubou o PM da Islândia, Pulitzer 2017, +US$ 1,2 bi recuperados, 12 líderes mundiais citados (até o Jackie Chan).</p>">
-  <h2><span class="num">05</span>O maior vazamento da história</h2>
+  <h2><span class="num">04</span>O maior vazamento da história</h2>
   <div class="body">
     <p class="lead">Os <b>Panama Papers</b> (2016) — investigados pelo <b>ICIJ</b>, um consórcio de jornalistas.</p>
     <div class="stat-grid">
@@ -304,7 +277,7 @@
 
 <!-- 07 · DEMO MULTI-HOP -->
 <section class="slide" data-notes="<h3>Demo · busca + multi-hop · 2-3min · AO VIVO</h3><p>Comece buscando ‘Mossack Fonseca’ ou ‘Brazil’ (ou ‘Albrecht’ p/ vizinhança rica). Aponte o painel inferior: o Cypher real + o tempo. A busca é rasa: aqui SQL e Cypher empatam — guarde isso.</p><p>Hop = pulo por uma aresta. 1 hop: empresas que a pessoa controla. 2 hops com volta: ‘quem mais usou o mesmo intermediário’ — o padrão investigativo clássico. No Cypher é UM padrão; em SQL são <b>4 JOINs</b>. Medido: 193×.</p>">
-  <h2><span class="num">06</span>Demo — o pulo do gato (multi-hop)</h2>
+  <h2><span class="num">05</span>Demo — o pulo do gato (multi-hop)</h2>
   <div class="body cols">
     <div>
       <span class="tag cy">CYPHER · 2 hops, "mesmo intermediário"</span>
@@ -336,7 +309,7 @@
 
 <!-- 07 · BENCHMARK GRÁFICO -->
 <section class="slide" data-notes="<h3>Benchmark gráfico · 1min30 · slide-chave</h3><p>Não é achismo — medimos (pnpm bench, aquecimento + 5 repetições). Atenção: escala <b>logarítmica</b>, cada degrau é 10×. Mesmo assim as barras vermelhas (SQL) disparam conforme os hops aumentam; a do caminho fura o teto (timeout); o PageRank nem tem barra (SQL não expressa). As verdes (Cypher) ficam quase constantes.</p><p>Repare: na BUSCA (esquerda) foi empate — jogo limpo. A distância verde↔vermelho é a vantagem do grafo, e cresce da esquerda pra direita.</p>">
-  <h2><span class="num">07</span>SQL vs. Cypher — medido</h2>
+  <h2><span class="num">06</span>SQL vs. Cypher — medido</h2>
   <div class="body" style="justify-content:flex-start">
     <div class="legend" style="margin:.2em 0 .4em">
       <span class="pill"><span class="dot" style="background:var(--emerald)"></span>Cypher (Neo4j)</span>
@@ -388,7 +361,7 @@
 
 <!-- 10 · INDEX-FREE ADJACENCY -->
 <section class="slide" data-notes="<h3>Index-free adjacency · 1min · o PORQUÊ</h3><p>O conceito que explica todos os números. Cada nó guarda fisicamente ponteiros diretos pros vizinhos — uma agenda em cada nó. Seguir uma aresta é O(1) local: 2 milhões ou 2 bilhões de nós, mesmo custo. Por isso o multi-hop não degrada.</p><p>Analogia: pra ver os amigos de um amigo no Instagram, você abre o perfil dele — a lista já está ali (o nó aponta direto pros vizinhos). O jeito relacional seria, a cada amigo, varrer uma planilha com TODAS as amizades da plataforma e filtrar. Com ‘amigo do amigo do amigo’, trava.</p><p>Se errar este conceito, perde credibilidade. Domine.</p>">
-  <h2><span class="num">08</span>Por quê? Index-free adjacency</h2>
+  <h2><span class="num">07</span>Por quê? Index-free adjacency</h2>
   <div class="body cols center">
     <div>
       <p class="lead">Cada nó guarda <b>ponteiros diretos</b> pros vizinhos. Seguir uma aresta é <b>O(1) local</b> — independe do tamanho do banco.</p>
@@ -409,7 +382,7 @@
 
 <!-- 11 · ALGORITMOS GDS -->
 <section class="slide" data-notes="<h3>Algoritmos GDS · 1min30 · AO VIVO</h3><p>O grafo não só consulta, ele analisa a estrutura. <b>PageRank</b> = os nós mais influentes (o algoritmo do Google). <b>Louvain</b> = detecção de comunidades: acha automaticamente grupos que se conectam muito entre si e pouco com o resto — tipo seus amigos da facul vs do trabalho formam ‘bolhas’ separadas. Numa investigação, revela redes ocultas (uma família + suas empresas + o escritório que todos usaram).</p><p><b>Onde mostrar:</b> 1) busque alguém e clique pra abrir a vizinhança; 2) aba <b>Algoritmos</b> (painel esquerdo); 3) botão <b>Louvain (comunidades)</b> → o grafo se repinta, cada comunidade com uma cor. O PageRank lista um ranking.</p><p>Em SQL puro não existe — precisaria exportar pra Python/Spark. Dica: rode numa pessoa comum (Albrecht), não num hub gigante. Testado: PageRank 65ms, Louvain 139 nós em 13 comunidades.</p>">
-  <h2><span class="num">09</span>Algoritmos de grafo (GDS)</h2>
+  <h2><span class="num">08</span>Algoritmos de grafo (GDS)</h2>
   <div class="body cols center">
     <div>
       <ul>
@@ -456,6 +429,28 @@
 </section>
 
 <!-- ░░░░░ APÊNDICE (backup p/ Q&A) ░░░░░ -->
+
+<!-- AX · OLÁ MUNDO / CYPHER (demo opcional) -->
+<section class="slide" data-notes="<h3>Apêndice · olá mundo (demo opcional, localhost:7474)</h3><p>Se quiser mostrar a linguagem na prática: CREATE grava dois nós e a seta; MATCH casa o padrão. O código parece o diagrama. Cypher virou padrão ISO (GQL) em 2024. Cole no Neo4j Browser ao vivo.</p>">
+  <div class="kicker apx">Apêndice · demo opcional (Neo4j Browser)</div>
+  <h2>"Olá, mundo" em Cypher</h2>
+  <div class="body cols center">
+    <div>
+      <p class="lead">A <b>"SQL dos grafos"</b>: declarativa e <b>ASCII-art</b> — <code style="font-family:var(--mono);color:var(--amber)">()</code> é nó, <code style="font-family:var(--mono);color:var(--amber)">-[]-></code> é relação.</p>
+      <p class="note">Padrão <b style="color:var(--mut)">ISO desde 2024</b> — o GQL, mesmo comitê do SQL.</p>
+    </div>
+    <div>
+      <pre><span class="c">// 1 · criar</span>
+<span class="k">CREATE</span> (ana<span class="f">:Pessoa</span>  {<span class="n">nome</span>:<span class="s">'Ana'</span>}),
+       (acme<span class="f">:Empresa</span> {<span class="n">nome</span>:<span class="s">'ACME'</span>}),
+       (ana)<span class="k">-[:TRABALHA_EM]-></span>(acme);
+
+<span class="c">// 2 · consultar (o código = o diagrama)</span>
+<span class="k">MATCH</span> (p<span class="f">:Pessoa</span>)<span class="k">-[:TRABALHA_EM]-></span>(e<span class="f">:Empresa</span>)
+<span class="k">RETURN</span> p.nome, e.nome;</pre>
+    </div>
+  </div>
+</section>
 
 <!-- A0 · CAMINHO MAIS CURTO (backup / demo opcional) -->
 <section class="slide" data-notes="<h3>Apêndice · caminho mais curto (demo opcional)</h3><p>Se sobrar tempo ou perguntarem do caminho: shortestPath é uma linha; em SQL é um CTE recursivo que estoura o timeout. Índice não resolve — é algorítmico. Demo testada: Albrecht → Michael J. Kamper, 4 saltos, 10ms (aba Algoritmos → caminho mais curto).</p>">

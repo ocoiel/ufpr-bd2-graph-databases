@@ -60,6 +60,8 @@ Controles: `←` `→` navegam · `N` abre as notas · `F` tela cheia.
 
 > "Por isso grafo está em todo lugar: rede social com 'amigos de amigos', recomendação da Netflix, detecção de fraude em banco, e investigação financeira — o nosso caso."
 
+> "E olha como é concreto: no **LinkedIn**, aquele '1º, 2º, 3º grau' de conexão é exatamente isso — a **distância em hops** entre você e outra pessoa. '2º grau' = dois pulos no grafo."
+
 💡 Gancho que cativa (pode usar aqui ou guardar): *"Aliás, se você já usou o Google, já usou um algoritmo de grafo — o PageRank. E eu vou rodar o mesmo PageRank na demo daqui a pouco."*
 
 > "E pra ser honesto: **não é bala de prata**. Pra relatório, soma, média — o relacional continua melhor. Cada um no que é bom."
@@ -82,27 +84,13 @@ Controles: `←` `→` navegam · `N` abre as notas · `F` tela cheia.
 
 > "E aqui está o que importa pro resto da palestra: cada **pulo a mais** — amigo do amigo do amigo — no SQL é **mais um JOIN**. No grafo, é só esticar o desenho com mais uma seta. Segura essa ideia."
 
-🌉 *Ponte:* "Essa linguagem do grafo tem nome: Cypher. Deixa eu mostrar o 'olá mundo' dela."
+🌉 *Ponte (vira o tom — aqui começa o show):* "Ah, e essa linguagem que vocês viram à direita tem nome: **Cypher** — virou padrão ISO em 2024, o mesmo comitê do SQL. Agora deixa eu mostrar onde isso foi usado de verdade — e não é com dado de brinquedo."
+
+> 💡 *Quer mostrar a linguagem na prática (CREATE/MATCH ao vivo)? Tem o slide "olá mundo" no **apêndice** — pula até ele ou faz no Neo4j Browser.*
 
 ---
 
-## 04 — "Olá, mundo" em Cypher (1 min 15)
-
-> "Cypher é a **'SQL dos grafos'**. E ela tem uma sacada genial: a sintaxe é **ASCII-art** — você desenha. Parênteses são um nó, setas são um relacionamento."
-
-🎬 *Aponte o código:*
-
-> "`CREATE` grava: aqui eu crio a Ana, a empresa ACME, e a seta TRABALHA_EM entre elas. E `MATCH` busca um padrão: 'me devolve toda Pessoa que trabalha numa Empresa'. Repara que **o código se parece com o diagrama**. Você descreve o que quer, e o banco acha."
-
-💡 Detalhe que dá autoridade (aponte a tabela CREATE=INSERT…):
-
-> "E pra quem acha que é 'coisa de nicho': desde **2024 o Cypher virou padrão ISO**, o GQL — o mesmo comitê que padroniza o SQL."
-
-🌉 *Ponte (vira o tom — aqui começa o show):* "Agora que vocês sabem ler isso, deixa eu mostrar onde a gente usou de verdade. E não é com dado de brinquedo."
-
----
-
-## 05 — O maior vazamento da história (1 min 30) ⭐
+## 04 — O maior vazamento da história (1 min 30) ⭐
 
 *(Volte ao gancho da abertura — agora com os números na tela.)*
 
@@ -122,7 +110,7 @@ Controles: `←` `→` navegam · `N` abre as notas · `F` tela cheia.
 
 ---
 
-## 06 — Os Panama Papers também são daqui (1 min) → LANÇA A DEMO
+## 05 — Os Panama Papers também são daqui (1 min) → LANÇA A DEMO
 
 > "Trazendo pro nosso mundo: os Panama Papers revelaram que **ao menos 57 investigados na Operação Lava Jato** abriram mais de 100 empresas offshore. Tem político de vários partidos e figura pública brasileira nessa base."
 
@@ -151,7 +139,7 @@ Controles: `←` `→` navegam · `N` abre as notas · `F` tela cheia.
 🎬 *Aponte o slide de trás na cabeça / ou comente:*
 > "Isso que eu fiz com um clique, em SQL seriam **quatro JOINs**. Mesma pergunta — aqui é um desenho, lá é um quebra-cabeça."
 
-**3. (Opcional) Algoritmos** — *ou deixe pro slide 09. Se fizer agora:*
+**3. (Opcional) Algoritmos** — *ou deixe pro slide 08. Se fizer agora:*
 🎬 Aba **Algoritmos** → **Louvain** → o grafo se repinta por comunidade.
 > "E o grafo não só busca — ele analisa. Isso aqui agrupou a rede em comunidades sozinho."
 
@@ -159,7 +147,7 @@ Controles: `←` `→` navegam · `N` abre as notas · `F` tela cheia.
 
 ---
 
-## 07 — SQL vs. Cypher, medido (gráfico) (2 min) ⭐⭐
+## 06 — SQL vs. Cypher, medido (gráfico) (2 min) ⭐⭐
 
 *(O slide-chave. Escala logarítmica.)*
 
@@ -181,7 +169,7 @@ Controles: `←` `→` navegam · `N` abre as notas · `F` tela cheia.
 
 ---
 
-## 08 — Por quê? Index-free adjacency (1 min 15)
+## 07 — Por quê? Index-free adjacency (1 min 15)
 
 > "O nome técnico é **index-free adjacency**. Tradução: cada nó guarda, gravado nele, um **ponteiro direto** pros vizinhos. Seguir uma ligação custa o mesmo tendo dois mil ou dois **bilhões** de nós no banco. Por isso o multi-hop não degrada."
 
@@ -197,7 +185,7 @@ Controles: `←` `→` navegam · `N` abre as notas · `F` tela cheia.
 
 ---
 
-## 09 — Algoritmos de grafo / GDS (2 min — pode ser ao vivo)
+## 08 — Algoritmos de grafo / GDS (2 min — pode ser ao vivo)
 
 > "O grafo não só consulta, ele **analisa a estrutura da rede**. Via uma biblioteca chamada GDS."
 
