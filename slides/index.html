@@ -124,12 +124,38 @@
       </ul>
       <p class="note">O relacionamento é cidadão de 1ª classe: ele é <b>armazenado</b>, não recalculado com JOIN a cada consulta.</p>
     </div>
-    <pre><span class="c">// modelo "property graph"</span>
-(<span class="f">:Pessoa</span> {<span class="n">nome</span>: <span class="s">"Ana"</span>})
-        │
-        │ <span class="k">[:TRABALHA_EM</span> {<span class="n">desde</span>:<span class="n">2020</span>}<span class="k">]</span>
-        ▼
-(<span class="f">:Empresa</span> {<span class="n">nome</span>: <span class="s">"ACME"</span>})</pre>
+    <svg viewBox="0 0 440 370" style="width:100%;height:auto;max-height:56vh" font-family="var(--sans)">
+      <defs>
+        <marker id="arr" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto" markerUnits="userSpaceOnUse">
+          <path d="M0,0 L7,3 L0,6 Z" fill="#71717a"/>
+        </marker>
+      </defs>
+      <!-- arestas -->
+      <g stroke="#52525b" stroke-width="2">
+        <line x1="124" y1="81"  x2="306" y2="89"  marker-end="url(#arr)"/>
+        <line x1="106" y1="110" x2="182" y2="247" marker-end="url(#arr)"/>
+        <line x1="320" y1="117" x2="223" y2="249" marker-end="url(#arr)"/>
+      </g>
+      <!-- rótulos das arestas -->
+      <g font-family="var(--mono)" font-size="11" text-anchor="middle">
+        <rect x="181" y="74"  width="68" height="20" rx="5" fill="#0c0c0f" stroke="#27272a"/><text x="215" y="88"  fill="#a1a1aa">AMIGA_DE</text>
+        <rect x="98"  y="158" width="96" height="20" rx="5" fill="#0c0c0f" stroke="#27272a"/><text x="146" y="172" fill="#a1a1aa">TRABALHA_EM</text>
+        <rect x="104" y="181" width="84" height="18" rx="5" fill="#121216" stroke="#27272a"/><text x="146" y="194" fill="#fbbf24" font-size="10">{desde: 2020}</text>
+        <rect x="223" y="168" width="96" height="20" rx="5" fill="#0c0c0f" stroke="#27272a"/><text x="271" y="182" fill="#a1a1aa">TRABALHA_EM</text>
+      </g>
+      <!-- nós -->
+      <g text-anchor="middle">
+        <circle cx="90"  cy="80"  r="34" fill="#fbbf24" fill-opacity="0.16" stroke="#fbbf24" stroke-width="2"/>
+        <text x="90"  y="85"  fill="#fafafa" font-size="15" font-weight="700">Ana</text>
+        <text x="90"  y="132" fill="#fbbf24" font-size="10" font-family="var(--mono)">:Pessoa</text>
+        <circle cx="340" cy="90"  r="34" fill="#fbbf24" fill-opacity="0.16" stroke="#fbbf24" stroke-width="2"/>
+        <text x="340" y="95"  fill="#fafafa" font-size="15" font-weight="700">Bia</text>
+        <text x="340" y="142" fill="#fbbf24" font-size="10" font-family="var(--mono)">:Pessoa</text>
+        <circle cx="200" cy="280" r="38" fill="#38bdf8" fill-opacity="0.16" stroke="#38bdf8" stroke-width="2"/>
+        <text x="200" y="285" fill="#fafafa" font-size="15" font-weight="700">ACME</text>
+        <text x="200" y="334" fill="#38bdf8" font-size="10" font-family="var(--mono)">:Empresa</text>
+      </g>
+    </svg>
   </div>
 </section>
 
