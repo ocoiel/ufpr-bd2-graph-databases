@@ -54,9 +54,9 @@ Controles: `←` `→` navegam · `N` abre as notas · `F` tela cheia.
 
 > "A regra é simples: o grafo brilha quando a pergunta é sobre o **caminho entre as coisas** — não sobre as coisas isoladas."
 
-🎬 *Use a analogia do metrô (está no slide):*
+🎬 *Aponte o mapa de metrô à direita: siga a rota verde de A até B, passando pela baldeação no cruzamento.*
 
-> "Pensa no mapa do metrô. 'Quantas estações tem a linha azul?' — isso é pergunta de tabela, você conta e pronto. Agora 'qual a rota da estação A até a B, e quantas baldeações?' — essa resposta é um **caminho**. É isso que o grafo faz bem."
+> "Pensa no mapa do metrô. 'Quantas estações tem a linha azul?' — isso é pergunta de tabela, você conta e pronto. Agora 'qual a rota daqui, do A, até o B?' — olha, ela sobe pela linha azul, faz uma **baldeação** aqui no cruzamento, e desce até o B. Essa resposta é um **caminho** — e é isso que o grafo faz bem."
 
 > "Por isso grafo está em todo lugar: rede social com 'amigos de amigos', recomendação da Netflix, detecção de fraude em banco, e investigação financeira — o nosso caso."
 
