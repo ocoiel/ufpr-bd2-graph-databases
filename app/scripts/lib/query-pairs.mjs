@@ -154,14 +154,12 @@ SELECT path, depth FROM walk WHERE node = $2 ORDER BY depth LIMIT 1`,
       // PageRank na vizinhança de 2 hops do officer-amostra (espelha o que o app
       // faz): projeta o subgrafo, roda o GDS e descarta a projeção.
       text: `MATCH (root) WHERE id(root) = $id
-CALL apoc.path.subgraphNodes(root, {maxLevel: 2}) YIELD node
-WITH collect(DISTINCT node) AS nodes
+CALL apoc.path.subgraphAll(root, {maxLevel: 2}) YIELD nodes, relationships
 CALL gds.graph.project.cypher(
   'bench-pr-' + toString(timestamp()),
   'UNWIND $ns AS n RETURN id(n) AS id',
-  'UNWIND $ns AS a UNWIND $ns AS b
-   MATCH (a)-[]-(b) WHERE id(a) < id(b) RETURN id(a) AS source, id(b) AS target',
-  {parameters: {ns: nodes}}
+  'UNWIND $rels AS r RETURN id(startNode(r)) AS source, id(endNode(r)) AS target',
+  {parameters: {ns: nodes, rels: relationships}}
 ) YIELD graphName, nodeCount
 CALL gds.pageRank.stream(graphName, {maxIterations: 20, dampingFactor: 0.85})
 YIELD nodeId, score

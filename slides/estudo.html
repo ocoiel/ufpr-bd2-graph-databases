@@ -1,0 +1,410 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<title>Guia de Estudo — Graph Databases (Neo4j) · BD2 UFPR</title>
+<style>
+  :root{
+    --ink:#18181b; --mut:#52525b; --dim:#71717a; --line:#e4e4e7; --soft:#f4f4f5;
+    --amber:#b45309; --rose:#be123c; --emer:#047857; --violet:#6d28d9; --sky:#0369a1;
+    --mono:"SF Mono",ui-monospace,"JetBrains Mono",Menlo,Consolas,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html{font-size:15px}
+  body{margin:0; font-family:var(--sans); color:var(--ink); line-height:1.5}
+  .page{max-width:820px; margin:0 auto; padding:36px 44px}
+
+  h1{font-size:2.2rem; letter-spacing:-.02em; margin:0 0 .15em; line-height:1.1}
+  .sub{color:var(--mut); font-size:1.05rem}
+  .meta{font-family:var(--mono); font-size:.82rem; color:var(--dim); margin-top:.6em}
+  .meta a{color:var(--sky); text-decoration:none}
+
+  h2{font-size:1.05rem; text-transform:uppercase; letter-spacing:.08em; color:var(--amber);
+     border-bottom:2px solid var(--line); padding-bottom:.35em; margin:2.2em 0 1em}
+
+  .slide-card{border:1px solid var(--line); border-radius:10px; padding:14px 18px; margin:0 0 14px;
+     break-inside:avoid}
+  .slide-card .tt{display:flex; align-items:baseline; gap:.6em; margin-bottom:.5em}
+  .slide-card .n{font-family:var(--mono); font-weight:700; color:var(--rose); font-size:.95rem}
+  .slide-card .h{font-weight:700; font-size:1.08rem}
+  .slide-card .time{margin-left:auto; font-family:var(--mono); font-size:.72rem; color:var(--dim);
+     background:var(--soft); padding:.1em .6em; border-radius:99px}
+  .lbl{font-family:var(--mono); font-size:.68rem; letter-spacing:.1em; text-transform:uppercase;
+     color:var(--dim); margin:.7em 0 .25em; font-weight:600}
+  .say{border-left:3px solid var(--amber); padding:.1em 0 .1em .9em; color:#3f3f46; font-style:italic}
+  ul{margin:.2em 0; padding-left:1.2em} li{margin:.2em 0; color:var(--mut)}
+  li b, p b, .say b{color:var(--ink); font-weight:600}
+
+  pre{background:var(--soft); border:1px solid var(--line); border-radius:8px; padding:.7em .9em;
+     font-family:var(--mono); font-size:.78rem; line-height:1.5; overflow:auto; margin:.4em 0; color:#27272a}
+  pre .c{color:#9ca3af; font-style:italic} pre .k{color:var(--violet); font-weight:600}
+  pre .s{color:var(--emer)} pre .f{color:var(--sky)} pre .kk{color:var(--rose); font-weight:600}
+  code{font-family:var(--mono); font-size:.85em; background:var(--soft); padding:.05em .35em; border-radius:4px}
+
+  table{width:100%; border-collapse:collapse; font-size:.85rem; margin:.5em 0}
+  th,td{text-align:left; padding:.45em .6em; border-bottom:1px solid var(--line)}
+  th{font-family:var(--mono); font-size:.68rem; text-transform:uppercase; letter-spacing:.05em; color:var(--dim)}
+  td.m{font-family:var(--mono)} .win{color:var(--emer); font-weight:600} .bad{color:var(--rose)}
+  .tie{color:var(--amber); font-weight:600}
+
+  .box{background:var(--soft); border:1px solid var(--line); border-radius:10px; padding:14px 18px; margin:1em 0}
+  .qa{break-inside:avoid; margin:.8em 0}
+  .qa .q{font-weight:700} .qa .a{color:var(--mut); margin-top:.15em}
+  .two{display:grid; grid-template-columns:1fr 1fr; gap:16px}
+  .keynum{display:flex; gap:10px; flex-wrap:wrap; margin:.6em 0}
+  .keynum span{font-family:var(--mono); font-size:.8rem; background:var(--soft); border:1px solid var(--line);
+     border-radius:99px; padding:.25em .7em}
+  hr{border:none; border-top:1px solid var(--line); margin:1.4em 0}
+  .foot{color:var(--dim); font-size:.8rem; text-align:center; margin-top:2em}
+  @page{margin:14mm 0}
+  @media print{ .slide-card,.qa,.box,table{break-inside:avoid} h2{break-after:avoid} }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <h1>Bancos de Dados de Grafos <span style="color:var(--mut);font-weight:400">— guia de estudo</span></h1>
+  <div class="sub">Neo4j · ICIJ Offshore Leaks · comparação SQL vs Cypher</div>
+  <div class="meta">BD2 · UFPR · Tema 9 · 17/06/2026 &nbsp;·&nbsp; slides: <a>ocoiel.github.io/ufpr-bd2-graph-databases</a></div>
+
+  <div class="box">
+    <b>Como apresentar.</b> Alvo: <b>12–15 min</b> de fala + demo ao vivo. Controles do deck:
+    <code>←</code> <code>→</code> navegam · <code>N</code> abre o roteiro de cada slide · <code>F</code> tela cheia.
+    <div class="lbl" style="margin-top:.8em">Checklist antes de começar</div>
+    <ul>
+      <li><code>docker compose ps</code> → <b>bd2-neo4j</b> e <b>bd2-postgres</b> "healthy"</li>
+      <li><code>cd app &amp;&amp; pnpm dev</code> → <code>localhost:3000</code></li>
+      <li>Abas abertas: o deck · <code>localhost:3000</code> (app) · <code>localhost:7474</code> (Neo4j Browser, opcional)</li>
+      <li>⚠️ Postgres do projeto roda na porta <b>5433</b> (a 5432 já tem um Postgres nativo na máquina)</li>
+    </ul>
+  </div>
+
+  <!-- ===================== IDEIAS-CHAVE ===================== -->
+  <h2>As 3 ideias que sustentam tudo</h2>
+  <ul>
+    <li><b>O relacionamento é cidadão de primeira classe.</b> No grafo ele é <b>armazenado</b> como aresta; no relacional ele é <b>recalculado com JOIN</b> a cada consulta.</li>
+    <li><b>Index-free adjacency.</b> Cada nó aponta direto pros vizinhos → seguir uma aresta é <b>O(1) local</b>, independente do tamanho do banco. Por isso o multi-hop não degrada.</li>
+    <li><b>A tradução é trivial; o desempenho, não.</b> SQL→Cypher é fácil de escrever, mas o tempo diverge de empate (busca rasa) a centenas de vezes (multi-hop), até onde o SQL não termina ou não consegue expressar.</li>
+  </ul>
+
+  <!-- ===================== ROTEIRO ===================== -->
+  <h2>Roteiro slide a slide</h2>
+
+  <div class="slide-card">
+    <div class="tt"><span class="n">01</span><span class="h">Abertura</span><span class="time">~30s</span></div>
+    <div class="lbl">fale</div>
+    <div class="say">"Nosso tema é <b>banco de dados de grafos</b>, com o Neo4j. Vamos do simples — o que é, pra que serve, um 'olá mundo' — até uma demo investigativa real com a base dos <b>Panama Papers</b>, comparando lado a lado com SQL."</div>
+    <p style="margin:.5em 0 0">Diga os nomes da dupla e o tema (Tema 9).</p>
+  </div>
+
+  <div class="slide-card">
+    <div class="tt"><span class="n">02</span><span class="h">O que é um banco de grafos</span><span class="time">~1min</span></div>
+    <div class="lbl">no slide</div>
+    <ul>
+      <li><b>Nó</b> = uma entidade (pessoa, empresa)</li>
+      <li><b>Relacionamento</b> = ligação com <b>direção</b> e <b>tipo</b></li>
+      <li><b>Propriedades</b> = chave-valor, em nós <i>e</i> em relacionamentos (modelo "property graph")</li>
+    </ul>
+    <div class="lbl">fale</div>
+    <div class="say">"Relacional guarda <b>tabelas e linhas</b>. Grafo guarda <b>nós e relacionamentos</b> — como você desenharia num quadro branco. A frase pra guardar: o relacionamento é <b>armazenado</b>, não recalculado com JOIN."</div>
+  </div>
+
+  <div class="slide-card">
+    <div class="tt"><span class="n">03</span><span class="h">Pra que serve</span><span class="time">~1min</span></div>
+    <div class="lbl">no slide</div>
+    <ul><li>Redes sociais, recomendação, detecção de fraude, logística, knowledge graphs pra IA, investigação financeira</li></ul>
+    <div class="lbl">fale</div>
+    <div class="say">"Quando a pergunta é sobre o <b>caminho entre as coisas</b>, e não sobre as coisas isoladas, o grafo brilha. E é honesto dizer: não é bala de prata — pra relatório tabular, soma e média, o relacional continua melhor."</div>
+  </div>
+
+  <div class="slide-card">
+    <div class="tt"><span class="n">04</span><span class="h">Relacional vs. Grafo</span><span class="time">~1min30</span></div>
+    <div class="two">
+      <div>
+        <div class="lbl">relacional · 3 tabelas + JOIN</div>
+<pre><span class="kk">SELECT</span> e.nome <span class="kk">FROM</span> pessoas p
+ <span class="kk">JOIN</span> trabalha_em t <span class="kk">ON</span> t.pessoa_id=p.id
+ <span class="kk">JOIN</span> empresas e <span class="kk">ON</span> e.id=t.empresa_id
+<span class="kk">WHERE</span> p.nome=<span class="s">'Ana'</span>;</pre>
+      </div>
+      <div>
+        <div class="lbl">grafo · o padrão é o desenho</div>
+<pre><span class="k">MATCH</span> (p<span class="f">:Pessoa</span> {<span>nome</span>:<span class="s">'Ana'</span>})
+      <span class="k">-[:TRABALHA_EM]-></span>(e<span class="f">:Empresa</span>)
+<span class="k">RETURN</span> e.nome;</pre>
+      </div>
+    </div>
+    <div class="lbl">fale</div>
+    <div class="say">"Mesma informação, dois modelos. O ponto que importa: cada 'pulo' a mais — amigo do amigo do amigo — no relacional é <b>mais um JOIN</b>; no grafo é só estender o desenho. É daí que vem a diferença de desempenho."</div>
+  </div>
+
+  <div class="slide-card">
+    <div class="tt"><span class="n">05</span><span class="h">"Olá, mundo" em Cypher</span><span class="time">~1min30</span></div>
+    <div class="lbl">no slide</div>
+<pre><span class="c">// 1 · criar</span>
+<span class="k">CREATE</span> (ana<span class="f">:Pessoa</span> {<span>nome</span>:<span class="s">'Ana'</span>}),
+       (acme<span class="f">:Empresa</span> {<span>nome</span>:<span class="s">'ACME'</span>}),
+       (ana)<span class="k">-[:TRABALHA_EM</span> {<span>desde</span>:<span>2020</span>}<span class="k">]-></span>(acme);
+<span class="c">// 2 · consultar</span>
+<span class="k">MATCH</span> (p<span class="f">:Pessoa</span>)<span class="k">-[:TRABALHA_EM]-></span>(e<span class="f">:Empresa</span>) <span class="k">RETURN</span> p.nome, e.nome;</pre>
+    <div class="lbl">fale</div>
+    <div class="say">"Cypher é a 'SQL dos grafos'. A sintaxe é <b>ASCII-art</b>: parênteses são nós, setas são relacionamentos. <code>CREATE</code> grava; <code>MATCH...RETURN</code> casa o padrão e devolve. Você descreve o desenho que procura — o banco acha."</div>
+    <p style="margin:.5em 0 0"><b>Opcional ao vivo</b> (Neo4j Browser, <code>localhost:7474</code>): cole o CREATE, depois o MATCH, mostre o nó e a aresta desenhados.</p>
+  </div>
+
+  <div class="slide-card">
+    <div class="tt"><span class="n">06</span><span class="h">O dataset — ICIJ Offshore Leaks</span><span class="time">~1min</span></div>
+    <div class="keynum">
+      <span>2,0 mi nós</span><span>3,3 mi relações</span><span>814k empresas</span><span>771k pessoas</span><span>27k intermediários</span><span>402k endereços</span>
+    </div>
+    <div class="lbl">fale</div>
+    <div class="say">"Base real por trás dos Panama, Paradise e Pandora Papers. <b>2 milhões de nós, 3,3 milhões de relações</b>, rodando local no Docker. O pulo do gato: o <b>mesmo dataset</b> está espelhado no Neo4j <b>e</b> no PostgreSQL — pra fazer a mesma pergunta nos dois e medir."</div>
+  </div>
+
+  <div class="slide-card">
+    <div class="tt"><span class="n">07–08</span><span class="h">Demo: busca por nome (query simples)</span><span class="time">~1min · ao vivo</span></div>
+    <div class="lbl">passos no app (localhost:3000)</div>
+    <ul>
+      <li>Buscar <b>"Putin"</b> → mostra Alexander Putin, Igor Putin…</li>
+      <li>Apontar o painel inferior: o Cypher é uma linha (<code>MATCH ... CONTAINS</code>)</li>
+      <li>Clicar num resultado → abre a vizinhança no grafo</li>
+    </ul>
+    <div class="lbl">fale</div>
+    <div class="say">"Essa é a operação <b>rasa</b>: aqui SQL e Cypher <b>empatam</b>, os dois usam índice. Guardem esse empate — a partir daqui o grafo abre vantagem."</div>
+  </div>
+
+  <div class="slide-card">
+    <div class="tt"><span class="n">09</span><span class="h">Multi-hop — o pulo do gato</span><span class="time">~2min · ao vivo</span></div>
+    <div class="lbl">a pergunta</div>
+    <p style="margin:.2em 0"><b>1 hop:</b> empresas que a pessoa controla. <b>2 hops com volta:</b> "quem mais usou o mesmo intermediário?" — o padrão investigativo clássico.</p>
+<pre><span class="c">// Cypher: um padrão</span>
+<span class="k">MATCH</span> (o<span class="f">:Officer</span>)<span class="k">-[:officer_of]-></span>(e1)<span class="k"><-[:intermediary_of]-</span>(i)
+      <span class="k">-[:intermediary_of]-></span>(e2)<span class="k"><-[:officer_of]-</span>(outro<span class="f">:Officer</span>)
+<span class="k">RETURN DISTINCT</span> outro.name;
+<span class="c">// O mesmo em SQL: 4 JOINs sobre a tabela de relações</span></pre>
+    <div class="lbl">fale</div>
+    <div class="say">"Mesma pergunta. No Cypher é <b>um padrão</b>; o mesmo em SQL já são <b>4 JOINs</b>. Um lado é um desenho, o outro é um quebra-cabeça de junções."</div>
+  </div>
+
+  <div class="slide-card">
+    <div class="tt"><span class="n">10</span><span class="h">Caminho mais curto entre 2 pessoas</span><span class="time">~1min30 · ao vivo</span></div>
+<pre><span class="k">MATCH</span> p = <span class="k">shortestPath</span>( (a)<span class="k">-[*..6]-</span>(b) ) <span class="k">RETURN</span> p;   <span class="c">// Cypher: 1 linha</span>
+<span class="c">// SQL: WITH RECURSIVE … CTE que reexpande a fronteira a cada nível</span></pre>
+    <div class="lbl">fale</div>
+    <div class="say">"O caso onde o SQL sofre: a profundidade é <b>desconhecida</b>. No Cypher é <code>shortestPath</code>, uma linha. No SQL é um CTE recursivo cuja fronteira explode. A partir de um nó bem conectado, o SQL <b>estoura o timeout já em 3 hops</b>; o Cypher responde em ~6ms em qualquer profundidade."</div>
+    <p style="margin:.5em 0 0">No app: aba <b>Algoritmos → caminho mais curto</b> entre dois nós.</p>
+  </div>
+
+  <div class="slide-card">
+    <div class="tt"><span class="n">11</span><span class="h">Benchmark — SQL vs Cypher medido</span><span class="time">~2min · slide-chave</span></div>
+    <table>
+      <thead><tr><th>Pergunta</th><th>Hops</th><th>Cypher</th><th>SQL</th><th>Vencedor</th></tr></thead>
+      <tbody>
+        <tr><td>Buscar por nome</td><td class="m">0</td><td class="m">80,9 ms</td><td class="m">70,0 ms</td><td class="tie">empate</td></tr>
+        <tr><td>Empresas controladas</td><td class="m">1</td><td class="m">2,8 ms</td><td class="m">25,9 ms</td><td class="win">Cypher 9×</td></tr>
+        <tr><td>Mesmo intermediário</td><td class="m">2</td><td class="m">2,9 ms</td><td class="m">567,6 ms</td><td class="win">Cypher 193×</td></tr>
+        <tr><td>Caminho mais curto</td><td class="m">variável</td><td class="m">5,7 ms</td><td class="bad m">timeout &gt;20s</td><td class="win">Cypher ✓</td></tr>
+        <tr><td>PageRank</td><td class="m">grafo</td><td class="m">367,9 ms</td><td class="bad">não existe</td><td class="win">Cypher ✓</td></tr>
+      </tbody>
+    </table>
+    <div class="lbl">fale</div>
+    <div class="say">"Não é achismo — medimos. Mesmo dataset, mesma pergunta, aquecimento + 5 repetições (<code>pnpm bench</code>). Quanto mais a pergunta depende de relacionamentos, mais o grafo ganha: de empate a ordens de grandeza."</div>
+  </div>
+
+  <div class="slide-card">
+    <div class="tt"><span class="n">11b</span><span class="h">O mesmo, em gráfico (escala log)</span><span class="time">~1min</span></div>
+    <svg viewBox="0 0 900 410" style="width:100%;height:auto" font-family="var(--mono)">
+      <g font-size="12" fill="#71717a">
+        <line x1="70" y1="360" x2="885" y2="360" stroke="#a1a1aa"/><text x="60" y="364" text-anchor="end">1ms</text>
+        <line x1="70" y1="293" x2="885" y2="293" stroke="#e4e4e7"/><text x="60" y="297" text-anchor="end">10ms</text>
+        <line x1="70" y1="227" x2="885" y2="227" stroke="#e4e4e7"/><text x="60" y="231" text-anchor="end">100ms</text>
+        <line x1="70" y1="160" x2="885" y2="160" stroke="#e4e4e7"/><text x="60" y="164" text-anchor="end">1s</text>
+        <line x1="70" y1="93"  x2="885" y2="93"  stroke="#e4e4e7"/><text x="60" y="97"  text-anchor="end">10s</text>
+      </g>
+      <g>
+        <rect x="107" y="233" width="40" height="127" rx="3" fill="#059669"/>
+        <rect x="155" y="237" width="40" height="123" rx="3" fill="#e11d48"/>
+        <text x="127" y="227" fill="#047857" font-size="12" text-anchor="middle">80,9</text>
+        <text x="175" y="231" fill="#be123c" font-size="12" text-anchor="middle">70,0</text>
+        <rect x="269" y="330" width="40" height="30"  rx="3" fill="#059669"/>
+        <rect x="317" y="266" width="40" height="94"  rx="3" fill="#e11d48"/>
+        <text x="289" y="324" fill="#047857" font-size="12" text-anchor="middle">2,8</text>
+        <text x="337" y="260" fill="#be123c" font-size="12" text-anchor="middle">25,9</text>
+        <rect x="431" y="329" width="40" height="31"  rx="3" fill="#059669"/>
+        <rect x="479" y="176" width="40" height="184" rx="3" fill="#e11d48"/>
+        <text x="451" y="323" fill="#047857" font-size="12" text-anchor="middle">2,9</text>
+        <text x="499" y="170" fill="#be123c" font-size="12" text-anchor="middle">568</text>
+        <rect x="593" y="310" width="40" height="50"  rx="3" fill="#059669"/>
+        <rect x="641" y="60"  width="40" height="300" rx="3" fill="#e11d48" opacity="0.45"/>
+        <line x1="641" y1="60" x2="681" y2="60" stroke="#e11d48" stroke-width="2" stroke-dasharray="4 3"/>
+        <text x="613" y="304" fill="#047857" font-size="12" text-anchor="middle">5,7</text>
+        <text x="661" y="52" fill="#be123c" font-size="11" text-anchor="middle">timeout ↑</text>
+        <rect x="755" y="189" width="40" height="171" rx="3" fill="#059669"/>
+        <text x="775" y="183" fill="#047857" font-size="12" text-anchor="middle">368</text>
+        <text x="823" y="332" fill="#71717a" font-size="11" text-anchor="middle">✗ não</text>
+        <text x="823" y="346" fill="#71717a" font-size="11" text-anchor="middle">existe</text>
+      </g>
+      <g font-size="13" fill="#52525b" text-anchor="middle">
+        <text x="151" y="382">Busca</text><text x="151" y="397" fill="#a1a1aa" font-size="11">0 hop</text>
+        <text x="313" y="382">Empresas</text><text x="313" y="397" fill="#a1a1aa" font-size="11">1 hop</text>
+        <text x="475" y="382">Intermediário</text><text x="475" y="397" fill="#a1a1aa" font-size="11">2 hops</text>
+        <text x="637" y="382">Caminho</text><text x="637" y="397" fill="#a1a1aa" font-size="11">variável</text>
+        <text x="799" y="382">PageRank</text><text x="799" y="397" fill="#a1a1aa" font-size="11">grafo</text>
+      </g>
+    </svg>
+    <p style="margin:.4em 0 0;color:#52525b;font-size:.86rem"><b style="color:#18181b">Escala logarítmica</b> (cada degrau = 10×). Verde = Cypher, vermelho = SQL. A barra do caminho fura o teto (timeout); PageRank não tem barra vermelha (SQL não expressa). A distância verde↔vermelho é a vantagem do grafo — e cresce da esquerda pra direita.</p>
+  </div>
+
+  <div class="slide-card">
+    <div class="tt"><span class="n">12</span><span class="h">"E com 3, 4, 5 hops?"</span><span class="time">~1min30</span></div>
+    <div class="two">
+      <div>
+        <div class="lbl">nó esparso (~4 conexões)</div>
+        <table><thead><tr><th>Hops</th><th>Cypher</th><th>SQL</th></tr></thead><tbody>
+          <tr><td class="m">3</td><td class="m">2,9</td><td class="m">0,5 ms</td></tr>
+          <tr><td class="m">4</td><td class="m">1,9</td><td class="m">0,8 ms</td></tr>
+          <tr><td class="m">5</td><td class="m">2,0</td><td class="m">3,0 ms</td></tr>
+          <tr><td class="m">6</td><td class="m">2,0</td><td class="bad m">25,7 ms</td></tr>
+        </tbody></table>
+      </div>
+      <div>
+        <div class="lbl">nó denso / hub (caso real)</div>
+        <table><thead><tr><th>Hops</th><th>Cypher</th><th>SQL</th></tr></thead><tbody>
+          <tr><td class="m">2</td><td class="m">7,4</td><td class="m">182 ms</td></tr>
+          <tr><td class="m">3</td><td class="m">6,8</td><td class="bad m">timeout</td></tr>
+          <tr><td class="m">4</td><td class="m">8,0</td><td class="bad m">timeout</td></tr>
+          <tr><td class="m">5</td><td class="m">6,8</td><td class="bad m">timeout</td></tr>
+        </tbody></table>
+      </div>
+    </div>
+    <div class="lbl">fale</div>
+    <div class="say">"Escala com a profundidade <b>depende da densidade do nó de partida</b>. Nó esparso: SQL acompanha até 4–5 hops. Nó denso (o caso interessante): SQL estoura já em 3. Nos dois, o Cypher fica <b>~constante</b>. A chave: o SQL não escala com a profundidade — escala com <b>densidade × profundidade</b>."</div>
+  </div>
+
+  <div class="slide-card">
+    <div class="tt"><span class="n">13</span><span class="h">Algoritmos de grafo (GDS)</span><span class="time">~1min30 · ao vivo</span></div>
+    <ul>
+      <li><b>PageRank</b> — o algoritmo do Google: quem são os nós mais <b>influentes</b></li>
+      <li><b>Louvain</b> — detecção de <b>comunidades</b> (clusters densamente ligados)</li>
+    </ul>
+    <div class="lbl">fale</div>
+    <div class="say">"O grafo não só consulta, ele <b>analisa a estrutura</b>, via a biblioteca GDS. Isso, em SQL puro, <b>não existe</b> — teria que exportar pra Python ou Spark. No Neo4j é uma chamada."</div>
+    <p style="margin:.5em 0 0">💡 <b>Dica:</b> rode os algoritmos sobre a vizinhança de uma <b>pessoa comum</b> (resultado da busca), não sobre um intermediário gigante — o subgrafo de um hub é enorme e demora.</p>
+  </div>
+
+  <div class="slide-card">
+    <div class="tt"><span class="n">14</span><span class="h">Quando usar grafo (e quando não)</span><span class="time">~1min</span></div>
+    <div class="two">
+      <div><div class="lbl">grafo brilha</div><ul><li>Relacionamentos profundos e variáveis</li><li>Caminhos, padrões de conexão</li><li>Recomendação, fraude, knowledge graph</li></ul></div>
+      <div><div class="lbl">relacional ganha</div><ul><li>Dados tabulares, agregações em colunas</li><li>Relatórios, BI, somas e médias</li><li>Transações simples e bem normalizadas</li></ul></div>
+    </div>
+    <div class="lbl">fale</div>
+    <div class="say">"Grafo não substitui o relacional. Na prática usa-se os dois — persistência poliglota, cada um no que é bom. Foi o que fizemos: espelhamos o mesmo dado nos dois."</div>
+  </div>
+
+  <div class="slide-card">
+    <div class="tt"><span class="n">15</span><span class="h">Conclusão</span><span class="time">~45s</span></div>
+    <div class="say">"A <b>tradução</b> de SQL pra Cypher é trivial; o <b>desempenho</b>, não. Vai do empate na busca rasa às centenas de vezes nos multi-hop, até onde o SQL não termina nem consegue expressar. Quanto mais a pergunta é sobre conexões, mais o grafo ganha. Stack: Neo4j 5.26 + GDS + APOC, PostgreSQL 17, Next.js — tudo local em Docker."</div>
+  </div>
+
+  <!-- ===================== CONCEITOS ===================== -->
+  <h2>Conceitos &amp; contexto (pra entender, não decorar)</h2>
+
+  <div class="slide-card">
+    <div class="tt"><span class="h">🔤 O que é Cypher, exatamente</span></div>
+    <p style="margin:.2em 0;color:var(--mut)">A linguagem de consulta do Neo4j — o que o SQL é pro relacional. Três marcas:</p>
+    <ul>
+      <li><b>Declarativa</b> — você diz o <i>quê</i> quer, não o <i>como</i> buscar (igual SQL nesse ponto).</li>
+      <li><b>ASCII-art</b> — você desenha o padrão: <code>( )</code> é um nó, <code>-[ ]-&gt;</code> é uma relação com direção. O código parece o diagrama.</li>
+      <li><b>Padrão ISO</b> — desde 2024 virou o <b>GQL</b> (Graph Query Language), aprovado pela ISO — mesmo comitê do SQL. Versão aberta: openCypher.</li>
+    </ul>
+    <table>
+      <thead><tr><th>Cypher</th><th>SQL equivalente</th><th>o que faz</th></tr></thead>
+      <tbody>
+        <tr><td class="m">CREATE</td><td class="m">INSERT</td><td>cria nós/relações</td></tr>
+        <tr><td class="m">MATCH … RETURN</td><td class="m">SELECT … FROM</td><td>acha um padrão e devolve</td></tr>
+        <tr><td class="m">WHERE</td><td class="m">WHERE</td><td>filtra</td></tr>
+        <tr><td class="m">MERGE</td><td class="m">INSERT … ON CONFLICT</td><td>cria se não existir</td></tr>
+      </tbody>
+    </table>
+    <div class="say" style="margin-top:.6em">"Cypher é a 'SQL dos grafos'. A sintaxe é ASCII-art: parênteses são nós, setas são relacionamentos. E desde 2024 virou padrão ISO, o GQL — o mesmo comitê do SQL."</div>
+  </div>
+
+  <div class="slide-card">
+    <div class="tt"><span class="h">🌍 Quem usa grafo de verdade</span></div>
+    <table>
+      <tbody>
+        <tr><td><b>Google</b></td><td>PageRank ranqueia páginas pela estrutura de links (+ Knowledge Graph)</td></tr>
+        <tr><td><b>Meta</b></td><td>Social Graph — "amigos de amigos"</td></tr>
+        <tr><td><b>LinkedIn</b></td><td>conexões de 1º/2º/3º grau = distância em hops</td></tr>
+        <tr><td><b>Netflix/Amazon</b></td><td>recomendação usuário→produto→usuário</td></tr>
+        <tr><td><b>Bancos</b></td><td>fraude: contas "diferentes" que dividem telefone/device</td></tr>
+        <tr><td><b>ICIJ</b></td><td>Panama/Pandora Papers — o nosso dataset</td></tr>
+      </tbody>
+    </table>
+    <div class="say" style="margin-top:.6em">Abertura matadora: "se você já usou o Google, já usou um algoritmo de grafo — o mesmo PageRank que vou rodar na demo".</div>
+  </div>
+
+  <div class="slide-card">
+    <div class="tt"><span class="h">📰 Panama · Paradise · Pandora Papers</span></div>
+    <p style="margin:.2em 0;color:var(--mut)">Três grandes <b>vazamentos</b> sobre <b>offshores</b> (empresas em paraísos fiscais, dono escondido, usadas pra esconder/sonegar/lavar). Investigados pelo <b>ICIJ</b> (Consórcio Internacional de Jornalistas Investigativos). O <b>intermediário</b> — escritório que cria as offshores — é a peça central: "quais clientes diferentes usaram o mesmo intermediário?".</p>
+    <table>
+      <thead><tr><th>Vazamento</th><th>Ano</th><th>Fonte</th><th>Docs</th></tr></thead>
+      <tbody>
+        <tr><td>Panama</td><td class="m">2016</td><td>Mossack Fonseca (Panamá)</td><td class="m">11,5 mi</td></tr>
+        <tr><td>Paradise</td><td class="m">2017</td><td>Appleby (Bermudas)</td><td class="m">13,4 mi</td></tr>
+        <tr><td>Pandora</td><td class="m">2021</td><td>14 escritórios offshore</td><td class="m">~12 mi</td></tr>
+      </tbody>
+    </table>
+    <p style="margin:.4em 0 0;color:var(--mut)">Vêm de fontes anônimas. Renderam o <b>Pulitzer 2017</b> e derrubaram o PM da Islândia. <b>O ponto:</b> o ICIJ usou Neo4j de verdade e publicou a base como grafo (ODbL) — é o nosso dataset. Não é exemplo de brinquedo.</p>
+  </div>
+
+  <div class="slide-card">
+    <div class="tt"><span class="h">🧠 Index-free adjacency — o conceito que explica tudo</span></div>
+    <p style="margin:.2em 0;color:var(--mut)">Cada nó guarda, fisicamente, <b>ponteiros diretos pros vizinhos</b>. Seguir uma aresta é <b>O(1) local</b> — ter 2 milhões ou 2 bilhões de nós não muda o custo do pulo. Por isso o multi-hop não degrada. No SQL, cada hop é um JOIN que varre/indexa a tabela de relações inteira de novo.</p>
+    <div class="box" style="margin:.6em 0 0;border-left:3px solid var(--sky)">
+      <b>Analogia da agenda.</b> Grafo = o telefone dos amigos salvo no seu celular (instantâneo). JOIN do SQL = toda vez, procurar o nome numa <b>lista telefônica da cidade inteira</b>. Com 1 amigo tanto faz; com "amigo do amigo do amigo", a lista telefônica te mata.
+    </div>
+    <p style="margin:.5em 0 0;color:var(--mut)"><b>Por que o caminho variável quebra o SQL:</b> a fronteira do CTE recursivo cresce exponencialmente → problema <b>algorítmico</b>, não de índice. Índice não resolve. (Decore isso.)</p>
+  </div>
+
+  <!-- ===================== Q&A ===================== -->
+  <h2>Perguntas prováveis (Q&amp;A)</h2>
+
+  <div class="qa"><div class="q">Por que o grafo é mais rápido no multi-hop?</div>
+    <div class="a"><b>Index-free adjacency</b>: cada nó guarda ponteiros diretos pros vizinhos. Seguir uma aresta é O(1) local, independente do tamanho total do banco. No SQL, cada hop é um JOIN que varre/indexa a tabela de relações inteira de novo.</div></div>
+
+  <div class="qa"><div class="q">Então é sempre melhor usar grafo?</div>
+    <div class="a">Não. Pra dado tabular, agregação e relatório, o relacional é mais simples e eficiente. Grafo ganha quando o <b>relacionamento</b> é o protagonista.</div></div>
+
+  <div class="qa"><div class="q">O Postgres não ficaria mais rápido com mais índices/tuning?</div>
+    <div class="a">Ajuda nos hops rasos. Mas o problema do caminho de profundidade variável é <b>algorítmico</b> (a fronteira do CTE cresce exponencialmente) — índice não resolve. E PageRank/Louvain não têm equivalente declarativo.</div></div>
+
+  <div class="qa"><div class="q">O que é GDS e APOC?</div>
+    <div class="a"><b>GDS</b> = Graph Data Science, a lib de algoritmos (PageRank, Louvain, caminhos). <b>APOC</b> = biblioteca de utilitários/procedimentos do Neo4j.</div></div>
+
+  <div class="qa"><div class="q">Os dados são reais? Como garantem que é a mesma comparação?</div>
+    <div class="a">Sim — ICIJ Offshore Leaks, licença ODbL, 2M nós / 3,3M relações. O Neo4j é a fonte; um ETL (<code>pnpm mirror:pg</code>) espelha <b>exatamente</b> os mesmos nós e relações pro schema relacional. O <code>id</code> do Neo4j vira <code>node_id</code> no Postgres — mesma chave dos dois lados.</div></div>
+
+  <div class="qa"><div class="q">O que é Cypher?</div>
+    <div class="a">A linguagem de consulta declarativa do Neo4j (hoje padronizada como GQL/openCypher). Descreve <b>padrões</b> de nós e relacionamentos em sintaxe ASCII-art.</div></div>
+
+  <!-- ===================== Plano B ===================== -->
+  <h2>Se algo quebrar na hora</h2>
+  <table>
+    <thead><tr><th>Problema</th><th>Ação</th></tr></thead>
+    <tbody>
+      <tr><td>App não conecta</td><td><code>docker compose ps</code> — Neo4j "healthy"? Se reiniciou, espera ~60s (recarrega plugins).</td></tr>
+      <tr><td>Busca vazia</td><td>Tenta <code>Putin</code>, <code>Mossack</code>, <code>Limited</code>.</td></tr>
+      <tr><td>Algoritmo travando</td><td>Você rodou num hub gigante. Rode numa pessoa comum (poucos vizinhos).</td></tr>
+      <tr><td>Postgres "role does not exist"</td><td>Está batendo no Postgres nativo (5432). Confirme <code>POSTGRES_PORT=5433</code> no <code>.env</code> e <code>app/.env.local</code>.</td></tr>
+      <tr><td>Reprovar os números ao vivo</td><td><code>cd app &amp;&amp; pnpm bench</code> e <code>node --env-file=../.env scripts/hop-sweep.mjs</code></td></tr>
+    </tbody>
+  </table>
+
+  <div class="foot">Guia de estudo gerado a partir do projeto · Neo4j · ICIJ Offshore Leaks (ODbL) · BD2 UFPR</div>
+
+</div>
+</body>
+</html>

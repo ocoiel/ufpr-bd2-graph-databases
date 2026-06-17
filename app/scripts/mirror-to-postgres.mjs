@@ -36,17 +36,17 @@ const NODE_SPECS = {
   Officer: {
     table: "officers",
     cols: ["node_id", "name", "country", "countries", "sourceID", "valid_until", "note"],
-    pick: (id, p) => [id, s(p.name), s(p.country_codes ?? p.country), s(p.countries), s(p.sourceID), s(p.valid_until), s(p.note)],
+    pick: (id, p) => [id, s(p.name) ?? `Officer #${id}`, s(p.country_codes ?? p.country), s(p.countries), s(p.sourceID), s(p.valid_until), s(p.note)],
   },
   Entity: {
     table: "entities",
     cols: ["node_id", "name", "original_name", "former_name", "jurisdiction", "jurisdiction_desc", "company_type", "address", "status", "service_provider", "sourceID", "valid_until", "note"],
-    pick: (id, p) => [id, s(p.name), s(p.original_name), s(p.former_name), s(p.jurisdiction), s(p.jurisdiction_description), s(p.company_type), s(p.address), s(p.status), s(p.service_provider), s(p.sourceID), s(p.valid_until), s(p.note)],
+    pick: (id, p) => [id, s(p.name) ?? `Entity #${id}`, s(p.original_name), s(p.former_name), s(p.jurisdiction), s(p.jurisdiction_description), s(p.company_type), s(p.address), s(p.status), s(p.service_provider), s(p.sourceID), s(p.valid_until), s(p.note)],
   },
   Intermediary: {
     table: "intermediaries",
     cols: ["node_id", "name", "country", "countries", "status", "sourceID", "valid_until", "note"],
-    pick: (id, p) => [id, s(p.name), s(p.country_codes ?? p.country), s(p.countries), s(p.status), s(p.sourceID), s(p.valid_until), s(p.note)],
+    pick: (id, p) => [id, s(p.name) ?? `Intermediary #${id}`, s(p.country_codes ?? p.country), s(p.countries), s(p.status), s(p.sourceID), s(p.valid_until), s(p.note)],
   },
   Address: {
     table: "addresses",
