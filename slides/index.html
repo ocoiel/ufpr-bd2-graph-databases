@@ -213,24 +213,29 @@
 <!-- 03 · RELACIONAL vs GRAFO -->
 <section class="slide" data-notes="<h3>Relacional vs Grafo · 1min30</h3><p>Mesma informação, dois modelos. No relacional, ‘quem trabalha onde’ exige tabela de junção + JOIN. No grafo, a ligação já existe como aresta.</p><p>O ponto crítico: cada ‘pulo’ a mais no relacional é <b>mais um JOIN</b>; no grafo é só estender o padrão com mais uma seta. Daí vem a diferença de desempenho que vamos medir.</p>">
   <h2><span class="num">03</span>Relacional vs. Grafo</h2>
-  <div class="body cols">
-    <div>
-      <span class="tag sql">RELACIONAL — 3 tabelas + JOIN</span>
-      <pre class="sql"><span class="k">SELECT</span> e.nome
+  <div class="body">
+    <div style="text-align:center; margin-bottom:1.4em">
+      <div class="kicker" style="margin-bottom:.45em">mesma pergunta dos dois lados</div>
+      <div style="font-size:clamp(1.3rem,2.8vw,2.1rem); font-weight:650; letter-spacing:-.01em">"Em que empresa a <span class="grad">Ana</span> trabalha?"</div>
+    </div>
+    <div class="cols center">
+      <div>
+        <span class="tag sql">RELACIONAL — 3 tabelas + 2 JOINs</span>
+        <pre class="sql" style="font-size:clamp(.85rem,1.35vw,1.22rem); line-height:1.75; padding:1.2em 1.4em"><span class="k">SELECT</span> e.nome
   <span class="k">FROM</span> pessoas p
   <span class="k">JOIN</span> trabalha_em t <span class="k">ON</span> t.pessoa_id = p.id
   <span class="k">JOIN</span> empresas e   <span class="k">ON</span> e.id = t.empresa_id
  <span class="k">WHERE</span> p.nome = <span class="s">'Ana'</span>;</pre>
-      <p class="note">Cada relação vira tabela; cada "pulo" vira um JOIN.</p>
-    </div>
-    <div>
-      <span class="tag cy">GRAFO — o padrão é o desenho</span>
-      <pre><span class="k">MATCH</span> (p<span class="f">:Pessoa</span> {<span class="n">nome</span>:<span class="s">'Ana'</span>})
+      </div>
+      <div>
+        <span class="tag cy">GRAFO — o padrão é o desenho</span>
+        <pre style="font-size:clamp(.85rem,1.35vw,1.22rem); line-height:1.75; padding:1.2em 1.4em"><span class="k">MATCH</span> (p<span class="f">:Pessoa</span> {<span class="n">nome</span>:<span class="s">'Ana'</span>})
       <span class="k">-[:TRABALHA_EM]-></span>
       (e<span class="f">:Empresa</span>)
 <span class="k">RETURN</span> e.nome;</pre>
-      <p class="note">A ligação já está armazenada. "Mais um pulo" = estender o padrão, não somar JOINs.</p>
+      </div>
     </div>
+    <p class="note" style="text-align:center; margin-top:1.3em">Cada "pulo" a mais: no SQL é <b style="color:var(--rose)">mais um JOIN</b>; no grafo, só <b style="color:var(--emerald)">mais uma seta</b>.</p>
   </div>
 </section>
 
