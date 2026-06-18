@@ -120,6 +120,34 @@ empata nos casos rasos. A vantagem do grafo cresce de forma desproporcional com 
 viram 4 JOINs, e caminho de profundidade variável vira um CTE recursivo que estoura o
 `statement_timeout`. PageRank e Louvain (GDS) nem têm equivalente declarativo em SQL puro.
 
+## Quando usar grafo (e quando não)
+
+Banco de grafos não é bala de prata. A regra prática: o grafo brilha quando a pergunta é sobre o
+**caminho entre as coisas**, não sobre as coisas isoladas. Para dado tabular e agregação, o relacional
+continua melhor. Neste projeto usamos os dois (persistência poliglota), cada banco no que faz melhor.
+
+**O grafo brilha quando:**
+
+- Os relacionamentos são profundos e de profundidade variável (amigos de amigos, multi-hop)
+- A pergunta é sobre caminhos e padrões de conexão (rota mais curta, anéis de fraude)
+- O caso é recomendação, detecção de fraude, knowledge graph ou investigação ("siga o dinheiro")
+- Entram algoritmos de rede: PageRank, Louvain, centralidade
+
+**O relacional ganha quando:**
+
+- Os dados são tabulares e as consultas são agregações em colunas (somas, médias)
+- O foco é relatório, BI e dashboards
+- As transações são simples e o schema bem normalizado
+- A carga é OLTP clássica, sem percorrer relações profundas
+
+**Pontos positivos e negativos do grafo:**
+
+| Dimensão | A favor | Contra |
+|---|---|---|
+| Desempenho | Multi-hop quase constante (index-free adjacency); até 193x neste benchmark | Empata ou perde na busca rasa por atributo (ver tabela acima) |
+| Modelagem | A ligação é armazenada, não recalculada com JOIN; a query parece o desenho | Curva de aprendizado de Cypher e de modelar em grafo |
+| Análise | PageRank, Louvain e caminhos nativos via GDS | Agregação e relatório tabular continuam mais naturais no SQL |
+
 ## Dataset
 
 Baixado de: https://offshoreleaks-data.icij.org/offshoreleaks/neo4j/icij-offshoreleaks-5.13.0.dump
