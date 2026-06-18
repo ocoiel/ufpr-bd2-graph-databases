@@ -178,15 +178,13 @@ export async function pageRankAround(
 }> {
   const cypher = `
 MATCH (root) WHERE id(root) = $rootId
-CALL apoc.path.subgraphNodes(root, {maxLevel: ${hops}, relationshipFilter: ''})
-YIELD node
-WITH collect(DISTINCT node) AS nodes
+CALL apoc.path.subgraphAll(root, {maxLevel: ${hops}})
+YIELD nodes, relationships
 CALL gds.graph.project.cypher(
   'subg-' + toString(timestamp()),
   'UNWIND $ns AS n RETURN id(n) AS id',
-  'UNWIND $ns AS a UNWIND $ns AS b
-   MATCH (a)-[r]-(b) WHERE id(a) < id(b) RETURN id(a) AS source, id(b) AS target',
-  {parameters: {ns: nodes}}
+  'UNWIND $rels AS r RETURN id(startNode(r)) AS source, id(endNode(r)) AS target',
+  {parameters: {ns: nodes, rels: relationships}}
 ) YIELD graphName, nodeCount
 CALL gds.pageRank.stream(graphName, {maxIterations: 20, dampingFactor: 0.85})
 YIELD nodeId, score
@@ -227,14 +225,12 @@ export async function louvainAround(
 }> {
   const cypher = `
 MATCH (root) WHERE id(root) = $rootId
-CALL apoc.path.subgraphNodes(root, {maxLevel: ${hops}}) YIELD node
-WITH collect(DISTINCT node) AS nodes
+CALL apoc.path.subgraphAll(root, {maxLevel: ${hops}}) YIELD nodes, relationships
 CALL gds.graph.project.cypher(
   'lvn-' + toString(timestamp()),
   'UNWIND $ns AS n RETURN id(n) AS id',
-  'UNWIND $ns AS a UNWIND $ns AS b
-   MATCH (a)-[r]-(b) WHERE id(a) < id(b) RETURN id(a) AS source, id(b) AS target',
-  {parameters: {ns: nodes}}
+  'UNWIND $rels AS r RETURN id(startNode(r)) AS source, id(endNode(r)) AS target',
+  {parameters: {ns: nodes, rels: relationships}}
 ) YIELD graphName
 CALL gds.louvain.stream(graphName) YIELD nodeId, communityId
 WITH graphName, collect({nodeId: nodeId, communityId: communityId}) AS rows

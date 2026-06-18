@@ -1,0 +1,612 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Graph Databases · Neo4j — BD2 UFPR</title>
+<style>
+  :root{
+    --bg:#09090b; --bg2:#0c0c0f; --panel:#121216; --line:#27272a;
+    --ink:#fafafa; --mut:#a1a1aa; --dim:#71717a;
+    --amber:#fbbf24; --rose:#fb7185; --emerald:#34d399; --sky:#38bdf8; --violet:#a78bfa;
+    --mono:"SF Mono",ui-monospace,"JetBrains Mono",Menlo,Consolas,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:var(--bg); color:var(--ink); font-family:var(--sans);
+    overflow:hidden; -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+  }
+  #deck{height:100vh;width:100vw;position:relative}
+  .slide{
+    position:absolute; inset:0; display:none; flex-direction:column;
+    padding:5.5vh 7vw; opacity:0; transition:opacity .25s ease;
+  }
+  .slide.active{display:flex; opacity:1}
+  .slide.title{justify-content:center}
+  h1{font-size:clamp(2.2rem,5.2vw,4rem); line-height:1.04; letter-spacing:-.03em; font-weight:700}
+  h2{font-size:clamp(1.4rem,3vw,2.3rem); letter-spacing:-.02em; font-weight:650; margin-bottom:.2em}
+  h2 .num{font-family:var(--mono); font-size:.5em; color:var(--amber); margin-right:.6em; font-weight:500; vertical-align:.35em}
+  .lead{font-size:clamp(1.05rem,1.7vw,1.4rem); color:var(--mut); line-height:1.5; max-width:62ch}
+  .grad{background:linear-gradient(100deg,var(--amber),var(--rose)); -webkit-background-clip:text; background-clip:text; color:transparent}
+  .kicker{font-family:var(--mono); font-size:.78rem; letter-spacing:.22em; text-transform:uppercase; color:var(--dim); margin-bottom:1.4em}
+  .kicker.apx{color:var(--rose); margin-bottom:.8em}
+  ul{list-style:none; display:flex; flex-direction:column; gap:.6em; margin-top:1em}
+  li{font-size:clamp(.98rem,1.5vw,1.28rem); color:var(--mut); line-height:1.4; padding-left:1.5em; position:relative}
+  li::before{content:"▸"; position:absolute; left:0; color:var(--amber)}
+  li b,li strong{color:var(--ink); font-weight:600}
+  .body{margin-top:.4em; flex:1; min-height:0; display:flex; flex-direction:column; justify-content:center}
+  .cols{display:grid; grid-template-columns:1fr 1fr; gap:2.5vw; align-items:start}
+  .cols.center{align-items:center}
+  pre{
+    background:var(--bg2); border:1px solid var(--line); border-radius:12px;
+    padding:1em 1.2em; font-family:var(--mono); font-size:clamp(.68rem,1.02vw,.98rem);
+    line-height:1.55; overflow:auto; color:#e4e4e7;
+  }
+  pre .c{color:var(--dim); font-style:italic}
+  pre .k{color:var(--violet); font-weight:600}
+  pre .s{color:var(--emerald)}
+  pre .f{color:var(--sky)}
+  pre .n{color:var(--amber)}
+  pre.sql .k{color:var(--rose)}
+  .tag{display:inline-block; font-family:var(--mono); font-size:.72rem; padding:.25em .7em; border-radius:999px; border:1px solid var(--line); color:var(--mut); margin-bottom:.7em}
+  .tag.cy{color:var(--emerald); border-color:#14532d}
+  .tag.sql{color:var(--rose); border-color:#7f1d1d}
+  table{width:100%; border-collapse:collapse; font-size:clamp(.8rem,1.2vw,1.12rem); margin-top:.5em}
+  th,td{text-align:left; padding:.55em .8em; border-bottom:1px solid var(--line)}
+  th{color:var(--dim); font-weight:500; font-family:var(--mono); font-size:.76em; letter-spacing:.05em; text-transform:uppercase}
+  td.win{color:var(--emerald); font-weight:600; font-family:var(--mono)}
+  td.tie{color:var(--amber); font-weight:600; font-family:var(--mono)}
+  td.mono{font-family:var(--mono)}
+  td.bad{color:var(--rose); font-family:var(--mono)}
+  td b{color:var(--ink)}
+  .stat-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:1.2vw; margin-top:1.2em}
+  .stat{background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:1.1em 1.2em}
+  .stat .v{font-size:clamp(1.4rem,3vw,2.4rem); font-weight:700; font-family:var(--mono); letter-spacing:-.02em}
+  .stat .l{color:var(--dim); font-size:.85rem; margin-top:.3em}
+  .pill{display:inline-flex; gap:.5em; align-items:center; background:var(--panel); border:1px solid var(--line); border-radius:999px; padding:.4em .9em; font-size:.85rem; color:var(--mut)}
+  .dot{width:.6em; height:.6em; border-radius:50%}
+  .legend{display:flex; gap:1.2em; flex-wrap:wrap; margin-top:1.2em}
+  .note{color:var(--dim); font-size:.92rem; margin-top:1em; font-style:italic}
+  .big{font-size:clamp(1.3rem,2.4vw,2rem); color:var(--ink); line-height:1.35; font-weight:600; max-width:24ch}
+  .demo{border-left:3px solid var(--amber); padding:.2em 0 .2em 1.2em; margin-top:1.2em}
+  .demo .h{font-family:var(--mono); font-size:.78rem; letter-spacing:.15em; text-transform:uppercase; color:var(--amber); margin-bottom:.5em}
+  .demo ul{margin-top:0}
+  .demo li{font-size:clamp(.9rem,1.3vw,1.08rem)}
+  .author{margin-top:2.2em; display:flex; gap:.8em; align-items:center; color:var(--mut); font-size:1.05rem}
+  .logo{width:2.4rem; height:2.4rem; border-radius:.6rem; background:linear-gradient(135deg,var(--amber),var(--rose)); display:grid; place-items:center; color:#09090b; font-weight:800; font-size:1.2rem}
+  .analogy{background:var(--panel); border:1px solid var(--line); border-left:3px solid var(--sky); border-radius:0 12px 12px 0; padding:1em 1.3em; margin-top:1.1em; color:var(--mut); font-size:clamp(.95rem,1.4vw,1.2rem); line-height:1.45}
+  .analogy b{color:var(--ink)}
+  .analogy .h{font-family:var(--mono); font-size:.72rem; letter-spacing:.12em; text-transform:uppercase; color:var(--sky); margin-bottom:.4em; display:block}
+  .quote{border-left:3px solid var(--rose); padding:.4em 0 .4em 1.2em; margin-top:1.1em; font-size:clamp(1.05rem,1.7vw,1.45rem); color:var(--ink); font-style:italic; line-height:1.4}
+  .quote span{display:block; font-style:normal; font-size:.8rem; color:var(--dim); margin-top:.5em; font-family:var(--mono)}
+  /* chrome */
+  #bar{position:fixed; top:0; left:0; height:3px; background:linear-gradient(90deg,var(--amber),var(--rose)); width:0; transition:width .25s; z-index:10}
+  #count{position:fixed; bottom:1.4vh; right:2vw; font-family:var(--mono); font-size:.78rem; color:var(--dim); z-index:10}
+  #hint{position:fixed; bottom:1.4vh; left:2vw; font-family:var(--mono); font-size:.72rem; color:#3f3f46; z-index:10}
+  #notes{position:fixed; inset:auto 0 0 0; max-height:44vh; overflow:auto; background:rgba(8,8,10,.97);
+    border-top:2px solid var(--amber); padding:1.4em 7vw; display:none; z-index:20; font-size:1.02rem; line-height:1.55; color:var(--mut)}
+  #notes.on{display:block}
+  #notes h3{color:var(--amber); font-family:var(--mono); font-size:.8rem; letter-spacing:.15em; text-transform:uppercase; margin-bottom:.6em}
+  #notes p{margin-bottom:.6em} #notes b{color:var(--ink)}
+  @media print{
+    body{overflow:visible} .slide{display:flex!important; opacity:1!important; position:relative; page-break-after:always; height:100vh}
+    #bar,#count,#hint,#notes{display:none!important}
+  }
+</style>
+</head>
+<body>
+<div id="bar"></div>
+<div id="deck">
+
+<!-- ░░ CAPA ░░ -->
+<section class="slide title" data-notes="<h3>Abertura · 30s</h3><p>Bom dia/tarde. Tema: <b>Banco de Dados de Grafos</b>, com o <b>Neo4j</b>. A ideia: do simples — o que é, um ‘olá mundo’ — até uma demo investigativa real com os <b>Panama Papers</b>, comparando com SQL.</p><p>Diga seu nome e o tema (Tema 9). A promessa ‘do simples aos Panama Papers’ prende a turma.</p>">
+  <div class="kicker">Banco de Dados 2 · UFPR · Tema 9</div>
+  <h1>Bancos de Dados<br><span class="grad">de Grafos</span></h1>
+  <p class="lead" style="margin-top:1.4em">Quando o que importa não são os dados — são as <b style="color:var(--ink)">conexões</b> entre eles.</p>
+  <div class="author">
+    <div class="logo">G</div>
+    <div>Neo4j · ICIJ Offshore Leaks · 17/06/2026</div>
+  </div>
+</section>
+
+<!-- 01 · O QUE É -->
+<section class="slide" data-notes="<h3>O que é · 1min</h3><p>Relacional guarda <b>tabelas e linhas</b>. Grafo guarda <b>nós e relacionamentos</b> — como você desenharia num quadro branco.</p><p>Nó = <b>substantivo</b> (Pessoa, Empresa). Relacionamento = <b>verbo</b>, com direção e tipo. Propriedades = chave-valor, em nós <b>e</b> em relacionamentos (o ‘desde 2020’ fica na própria seta).</p><p>Frase-chave: o relacionamento é <b>armazenado</b> como uma seta no disco, não recalculado com JOIN a cada consulta.</p>">
+  <h2><span class="num">01</span>O que é um banco de grafos?</h2>
+  <div class="body cols center">
+    <div>
+      <p class="lead">Em vez de <b>tabelas e linhas</b>, você armazena<br><b>nós</b> e <b>relacionamentos</b> — como num quadro branco.</p>
+      <ul>
+        <li><b>Nó</b> — uma entidade (substantivo: Pessoa, Empresa)</li>
+        <li><b>Relacionamento</b> — ligação (verbo) com <b>direção</b> e <b>tipo</b></li>
+        <li><b>Propriedades</b> — chave-valor em nós <i>e</i> arestas</li>
+      </ul>
+      <p class="note">O relacionamento é cidadão de 1ª classe: ele é <b>armazenado</b>, não recalculado com JOIN a cada consulta.</p>
+    </div>
+    <svg viewBox="0 0 440 370" style="width:100%;height:auto;max-height:56vh" font-family="var(--sans)">
+      <defs>
+        <marker id="arr" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto" markerUnits="userSpaceOnUse">
+          <path d="M0,0 L7,3 L0,6 Z" fill="#71717a"/>
+        </marker>
+      </defs>
+      <!-- arestas -->
+      <g stroke="#52525b" stroke-width="2">
+        <line x1="124" y1="81"  x2="306" y2="89"  marker-end="url(#arr)"/>
+        <line x1="106" y1="110" x2="182" y2="247" marker-end="url(#arr)"/>
+        <line x1="320" y1="117" x2="223" y2="249" marker-end="url(#arr)"/>
+      </g>
+      <!-- rótulos das arestas -->
+      <g font-family="var(--mono)" font-size="11" text-anchor="middle">
+        <rect x="181" y="74"  width="68" height="20" rx="5" fill="#0c0c0f" stroke="#27272a"/><text x="215" y="88"  fill="#a1a1aa">AMIGA_DE</text>
+        <rect x="98"  y="158" width="96" height="20" rx="5" fill="#0c0c0f" stroke="#27272a"/><text x="146" y="172" fill="#a1a1aa">TRABALHA_EM</text>
+        <rect x="104" y="181" width="84" height="18" rx="5" fill="#121216" stroke="#27272a"/><text x="146" y="194" fill="#fbbf24" font-size="10">{desde: 2020}</text>
+        <rect x="223" y="168" width="96" height="20" rx="5" fill="#0c0c0f" stroke="#27272a"/><text x="271" y="182" fill="#a1a1aa">TRABALHA_EM</text>
+      </g>
+      <!-- nós -->
+      <g text-anchor="middle">
+        <circle cx="90"  cy="80"  r="34" fill="#fbbf24" fill-opacity="0.16" stroke="#fbbf24" stroke-width="2"/>
+        <text x="90"  y="85"  fill="#fafafa" font-size="15" font-weight="700">Ana</text>
+        <text x="90"  y="132" fill="#fbbf24" font-size="10" font-family="var(--mono)">:Pessoa</text>
+        <circle cx="340" cy="90"  r="34" fill="#fbbf24" fill-opacity="0.16" stroke="#fbbf24" stroke-width="2"/>
+        <text x="340" y="95"  fill="#fafafa" font-size="15" font-weight="700">Bia</text>
+        <text x="340" y="142" fill="#fbbf24" font-size="10" font-family="var(--mono)">:Pessoa</text>
+        <circle cx="200" cy="280" r="38" fill="#38bdf8" fill-opacity="0.16" stroke="#38bdf8" stroke-width="2"/>
+        <text x="200" y="285" fill="#fafafa" font-size="15" font-weight="700">ACME</text>
+        <text x="200" y="334" fill="#38bdf8" font-size="10" font-family="var(--mono)">:Empresa</text>
+      </g>
+    </svg>
+  </div>
+</section>
+
+<!-- 02 · PRA QUE SERVE -->
+<section class="slide" data-notes="<h3>Pra que serve · 1min</h3><p>Quando a pergunta é sobre o <b>caminho entre as coisas</b> — não sobre as coisas isoladas — o grafo brilha. ‘Caminho’ é literal: a resposta é a trajetória de saltos de um nó pro outro.</p><p>Gancho: ‘se você já usou o Google, já usou um algoritmo de grafo — o PageRank ranqueia páginas pelos links, e é o mesmo que vou rodar na demo’.</p><p>Honestidade: não é bala de prata. Relatório, soma, média → relacional ganha.</p>">
+  <h2><span class="num">02</span>Pra que serve?</h2>
+  <div class="body cols center">
+    <div>
+      <p class="lead">Quando a pergunta é sobre o <b>caminho entre as coisas</b>, não sobre as coisas isoladas.</p>
+      <ul>
+        <li><b>Redes sociais</b> — "amigos de amigos"</li>
+        <li><b>Recomendação</b> — Netflix, Amazon</li>
+        <li><b>Fraude</b> — anéis de transações</li>
+        <li><b>Rotas & logística</b> — caminho mais curto</li>
+        <li><b>Busca / IA</b> — Google PageRank</li>
+        <li><b>Investigação</b> — "siga o dinheiro" 💸</li>
+      </ul>
+      <p class="note">Não é bala de prata: relatório, soma e média → o relacional ganha.</p>
+    </div>
+    <div>
+      <span class="tag" style="color:var(--sky);border-color:#0c4a6e">analogia do metrô</span>
+      <svg viewBox="0 0 460 272" style="width:100%;height:auto;max-height:42vh" font-family="var(--sans)">
+        <!-- rota A→B em destaque (o "caminho") -->
+        <path d="M40,110 L230,110 L230,240" fill="none" stroke="#34d399" stroke-width="13" stroke-opacity="0.25" stroke-linecap="round" stroke-linejoin="round"/>
+        <!-- linha azul -->
+        <line x1="40" y1="110" x2="420" y2="110" stroke="#38bdf8" stroke-width="5" stroke-linecap="round"/>
+        <!-- linha âmbar -->
+        <line x1="230" y1="110" x2="230" y2="240" stroke="#fbbf24" stroke-width="5" stroke-linecap="round"/>
+        <!-- estações -->
+        <g fill="#0c0c0f" stroke="#38bdf8" stroke-width="2.5">
+          <circle cx="135" cy="110" r="6"/><circle cx="325" cy="110" r="6"/><circle cx="420" cy="110" r="6"/>
+        </g>
+        <g fill="#0c0c0f" stroke="#fbbf24" stroke-width="2.5">
+          <circle cx="230" cy="175" r="6"/>
+        </g>
+        <!-- baldeação (hub) -->
+        <circle cx="230" cy="110" r="9" fill="#0c0c0f" stroke="#fafafa" stroke-width="2.5"/>
+        <!-- A e B (origem/destino da rota) -->
+        <circle cx="40"  cy="110" r="7.5" fill="#34d399" stroke="#09090b" stroke-width="2"/>
+        <circle cx="230" cy="240" r="7.5" fill="#34d399" stroke="#09090b" stroke-width="2"/>
+        <g text-anchor="middle" fill="#fafafa" font-size="15" font-weight="700">
+          <text x="40" y="94">A</text>
+          <text x="230" y="262">B</text>
+        </g>
+        <text x="246" y="103" font-family="var(--mono)" font-size="11" fill="#a1a1aa">baldeação</text>
+      </svg>
+      <div style="margin-top:.4em; display:flex; flex-direction:column; gap:.4em; font-size:clamp(.9rem,1.3vw,1.1rem); color:var(--mut)">
+        <span><b style="color:var(--sky)">Relacional:</b> "quantas estações tem a linha?" → conta</span>
+        <span><b style="color:var(--emerald)">Grafo:</b> "qual a rota de A até B?" → o <b style="color:var(--ink)">caminho</b></span>
+        <span><b style="color:var(--violet)">LinkedIn:</b> 1º, 2º, 3º grau = <b style="color:var(--ink)">distância em hops</b></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 03 · RELACIONAL vs GRAFO -->
+<section class="slide" data-notes="<h3>Relacional vs Grafo · 1min30</h3><p>Mesma informação, dois modelos. No relacional, ‘quem trabalha onde’ exige tabela de junção + JOIN. No grafo, a ligação já existe como aresta.</p><p>O ponto crítico: cada ‘pulo’ a mais no relacional é <b>mais um JOIN</b>; no grafo é só estender o padrão com mais uma seta. Daí vem a diferença de desempenho que vamos medir.</p>">
+  <h2><span class="num">03</span>Relacional vs. Grafo</h2>
+  <div class="body">
+    <div style="text-align:center; margin-bottom:1.4em">
+      <div class="kicker" style="margin-bottom:.45em">mesma pergunta dos dois lados</div>
+      <div style="font-size:clamp(1.3rem,2.8vw,2.1rem); font-weight:650; letter-spacing:-.01em">"Em que empresa a <span class="grad">Ana</span> trabalha?"</div>
+    </div>
+    <div class="cols center">
+      <div>
+        <span class="tag sql">SQL · relacional — 3 tabelas + 2 JOINs</span>
+        <pre class="sql" style="font-size:clamp(.85rem,1.35vw,1.22rem); line-height:1.75; padding:1.2em 1.4em"><span class="k">SELECT</span> e.nome
+  <span class="k">FROM</span> pessoas p
+  <span class="k">JOIN</span> trabalha_em t <span class="k">ON</span> t.pessoa_id = p.id
+  <span class="k">JOIN</span> empresas e   <span class="k">ON</span> e.id = t.empresa_id
+ <span class="k">WHERE</span> p.nome = <span class="s">'Ana'</span>;</pre>
+      </div>
+      <div>
+        <span class="tag cy">Cypher · grafo — o desenho é a query</span>
+        <pre style="font-size:clamp(.85rem,1.35vw,1.22rem); line-height:1.75; padding:1.2em 1.4em"><span class="k">MATCH</span> (p<span class="f">:Pessoa</span> {<span class="n">nome</span>:<span class="s">'Ana'</span>})
+      <span class="k">-[:TRABALHA_EM]-></span>
+      (e<span class="f">:Empresa</span>)
+<span class="k">RETURN</span> e.nome;</pre>
+      </div>
+    </div>
+    <p class="note" style="text-align:center; margin-top:1.3em">Cada "pulo" a mais: no SQL é <b style="color:var(--rose)">mais um JOIN</b>; no grafo, só <b style="color:var(--emerald)">mais uma seta</b>.</p>
+  </div>
+</section>
+
+<!-- 04 · OS PAPERS (IMPACTO GLOBAL) -->
+<section class="slide" data-notes="<h3>Os Papers · 1min30 · o gancho que cativa</h3><p>O maior vazamento de dados da história do jornalismo. <b>11,5 milhões de documentos, 2,6 TB</b>, detalhando <b>214.488 empresas offshore</b>, com docs desde os anos 1970.</p><p>Veio de uma fonte anônima, ‘John Doe’ (‘minha vida está em perigo’), que entregou ao jornal alemão Süddeutsche Zeitung → ICIJ. <b>107 veículos, 80 países, mais de 1 ano</b> de apuração.</p><p>A Mossack Fonseca criou +300 mil empresas. Memo interno: ‘95% do nosso trabalho é vender veículos pra evitar impostos’. Consequências: derrubou o PM da Islândia, Pulitzer 2017, +US$ 1,2 bi recuperados, 12 líderes mundiais citados (até o Jackie Chan).</p>">
+  <h2><span class="num">04</span>O maior vazamento da história</h2>
+  <div class="body">
+    <p class="lead">Os <b>Panama Papers</b> — 2016, investigação do <b>ICIJ</b>.</p>
+    <div class="stat-grid">
+      <div class="stat"><div class="v" style="color:var(--amber)">11,5 mi</div><div class="l">documentos · 2,6 TB</div></div>
+      <div class="stat"><div class="v" style="color:var(--rose)">214 mil</div><div class="l">empresas offshore</div></div>
+      <div class="stat"><div class="v" style="color:var(--sky)">107 / 80</div><div class="l">imprensa · países</div></div>
+      <div class="stat"><div class="v" style="color:var(--emerald)">12</div><div class="l">líderes mundiais citados</div></div>
+    </div>
+    <div class="quote">"95% do nosso trabalho consiste em vender empresas para evitar impostos."
+      <span>— memo interno da Mossack Fonseca</span>
+    </div>
+    <div class="legend" style="margin-top:1.1em">
+      <span class="pill">🏆 Pulitzer 2017</span>
+      <span class="pill">🏛️ derrubou um premiê</span>
+      <span class="pill">💰 +US$ 1,2 bi recuperados</span>
+    </div>
+    <p style="margin-top:1.2em; font-size:clamp(1.05rem,1.7vw,1.35rem); color:var(--mut)">E investigaram tudo isso num <b style="color:var(--ink)">banco de grafos — <span class="grad">Neo4j</span></b>. É a base da nossa demo.</p>
+  </div>
+</section>
+
+<!-- 06 · O BRASIL / CURITIBA / UFPR  (emenda na demo) -->
+<section class="slide" data-notes="<h3>O Brasil / Curitiba · 1min · gancho LOCAL + lança a demo</h3><p>Pra trazer pro nosso mundo: os Panama Papers revelaram que <b>ao menos 57 investigados na Operação Lava Jato</b> abriram mais de 100 empresas offshore. E a Lava Jato foi <b>sediada aqui em Curitiba</b> — a nossa cidade.</p><p>E não é abstrato: o <b>nosso dataset</b> tem 4.495 pessoas e 1.532 empresas do Brasil — incluindo a própria <b>‘Mossack Fonseca do Brasil S.A.’</b>.</p><p>Vire pro app e diga: ‘bora buscar isso ao vivo’. ABRA localhost:3000. Primeira busca: ‘Mossack Fonseca’ ou ‘Brazil’.</p>">
+  <div class="kicker">Parte 2 · e isso é aqui</div>
+  <h1 style="font-size:clamp(1.9rem,4.4vw,3.2rem)">Os Panama Papers<br><span class="grad">também são daqui.</span></h1>
+  <div class="cols" style="margin-top:1.6em; align-items:start">
+    <ul>
+      <li><b>57 investigados na Lava Jato</b> abriram +100 empresas offshore</li>
+      <li>Políticos de <b>vários partidos</b> e figuras públicas citados</li>
+    </ul>
+    <ul>
+      <li>No <b>nosso grafo</b>: 4.495 pessoas e 1.532 empresas do Brasil</li>
+      <li>Inclusive a <b>"Mossack Fonseca do Brasil S.A."</b></li>
+    </ul>
+  </div>
+  <p class="lead" style="margin-top:1.6em">Bora <b style="color:var(--ink)">seguir o dinheiro</b> ao vivo → <code style="font-family:var(--mono);color:var(--amber)">localhost:3000</code></p>
+</section>
+
+<!-- 07 · DEMO MULTI-HOP -->
+<section class="slide" data-notes="<h3>Demo · busca + multi-hop · 2-3min · AO VIVO</h3><p>Comece buscando ‘Mossack Fonseca’ ou ‘Brazil’ (ou ‘Albrecht’ p/ vizinhança rica). Aponte o painel inferior: o Cypher real + o tempo. A busca é rasa: aqui SQL e Cypher empatam — guarde isso.</p><p>Hop = pulo por uma aresta. 1 hop: empresas que a pessoa controla. 2 hops com volta: ‘quem mais usou o mesmo intermediário’ — o padrão investigativo clássico. No Cypher é UM padrão; em SQL são <b>4 JOINs</b>. Medido: 193×.</p>">
+  <h2><span class="num">05</span>Demo — o pulo do gato (multi-hop)</h2>
+  <div class="body cols">
+    <div>
+      <span class="tag cy">CYPHER · 2 hops, "mesmo intermediário"</span>
+      <pre><span class="k">MATCH</span> (o<span class="f">:Officer</span>)<span class="k">-[:officer_of]-></span>(e1)
+      <span class="k"><-[:intermediary_of]-</span>(i)
+      <span class="k">-[:intermediary_of]-></span>(e2)
+      <span class="k"><-[:officer_of]-</span>(outro<span class="f">:Officer</span>)
+<span class="k">RETURN DISTINCT</span> outro.name;</pre>
+      <div class="demo">
+        <div class="h">▶ ao vivo</div>
+        <ul>
+          <li>Buscar <b>"Mossack Fonseca"</b> / <b>"Brazil"</b></li>
+          <li>Clicar → vizinhança · expandir os pulos</li>
+        </ul>
+      </div>
+    </div>
+    <div>
+      <span class="tag sql">O MESMO EM SQL · 4 JOINs</span>
+      <pre class="sql"><span class="k">SELECT DISTINCT</span> outro.name
+  <span class="k">FROM</span> relationships r1
+  <span class="k">JOIN</span> relationships r2 <span class="k">ON</span> r2.end_id=r1.end_id
+  <span class="k">JOIN</span> relationships r3 <span class="k">ON</span> r3.start_id=r2.start_id
+  <span class="k">JOIN</span> relationships r4 <span class="k">ON</span> r4.end_id=r3.end_id
+  <span class="k">JOIN</span> officers outro <span class="k">ON</span> outro.node_id=r4.start_id;</pre>
+      <p class="note">Um lado é um desenho; o outro, um quebra-cabeça. <b style="color:var(--emerald)">Medido: Cypher 193×.</b></p>
+    </div>
+  </div>
+</section>
+
+<!-- 07 · BENCHMARK GRÁFICO -->
+<section class="slide" data-notes="<h3>Benchmark gráfico · 1min30 · slide-chave</h3><p>Não é achismo — medimos (pnpm bench, aquecimento + 5 repetições). Atenção: escala <b>logarítmica</b>, cada degrau é 10×. Mesmo assim as barras vermelhas (SQL) disparam conforme os hops aumentam; a do caminho fura o teto (timeout); o PageRank nem tem barra (SQL não expressa). As verdes (Cypher) ficam quase constantes.</p><p>Repare: na BUSCA (esquerda) foi empate — jogo limpo. A distância verde↔vermelho é a vantagem do grafo, e cresce da esquerda pra direita.</p>">
+  <h2><span class="num">06</span>SQL vs. Cypher — medido</h2>
+  <div class="body" style="justify-content:flex-start">
+    <div class="legend" style="margin:.2em 0 .4em">
+      <span class="pill"><span class="dot" style="background:var(--emerald)"></span>Cypher (Neo4j)</span>
+      <span class="pill"><span class="dot" style="background:var(--rose)"></span>SQL (PostgreSQL)</span>
+      <span class="pill" style="color:var(--dim)">escala log — cada degrau = 10×</span>
+    </div>
+    <svg viewBox="0 0 900 400" style="width:100%;height:auto;max-height:58vh" font-family="var(--mono)">
+      <g font-size="12" fill="#71717a">
+        <line x1="70" y1="360" x2="885" y2="360" stroke="#3f3f46"/><text x="60" y="364" text-anchor="end">1ms</text>
+        <line x1="70" y1="293" x2="885" y2="293" stroke="#1a1a1e"/><text x="60" y="297" text-anchor="end">10ms</text>
+        <line x1="70" y1="227" x2="885" y2="227" stroke="#1a1a1e"/><text x="60" y="231" text-anchor="end">100ms</text>
+        <line x1="70" y1="160" x2="885" y2="160" stroke="#1a1a1e"/><text x="60" y="164" text-anchor="end">1s</text>
+        <line x1="70" y1="93"  x2="885" y2="93"  stroke="#1a1a1e"/><text x="60" y="97"  text-anchor="end">10s</text>
+      </g>
+      <g>
+        <rect x="107" y="233" width="40" height="127" rx="3" fill="#34d399"/>
+        <rect x="155" y="237" width="40" height="123" rx="3" fill="#fb7185"/>
+        <text x="127" y="227" fill="#34d399" font-size="12" text-anchor="middle">80,9</text>
+        <text x="175" y="231" fill="#fb7185" font-size="12" text-anchor="middle">70,0</text>
+        <rect x="269" y="330" width="40" height="30"  rx="3" fill="#34d399"/>
+        <rect x="317" y="266" width="40" height="94"  rx="3" fill="#fb7185"/>
+        <text x="289" y="324" fill="#34d399" font-size="12" text-anchor="middle">2,8</text>
+        <text x="337" y="260" fill="#fb7185" font-size="12" text-anchor="middle">25,9</text>
+        <rect x="431" y="329" width="40" height="31"  rx="3" fill="#34d399"/>
+        <rect x="479" y="176" width="40" height="184" rx="3" fill="#fb7185"/>
+        <text x="451" y="323" fill="#34d399" font-size="12" text-anchor="middle">2,9</text>
+        <text x="499" y="170" fill="#fb7185" font-size="12" text-anchor="middle">568</text>
+        <rect x="593" y="310" width="40" height="50"  rx="3" fill="#34d399"/>
+        <rect x="641" y="60"  width="40" height="300" rx="3" fill="#fb7185" opacity="0.5"/>
+        <line x1="641" y1="60" x2="681" y2="60" stroke="#fb7185" stroke-width="2" stroke-dasharray="4 3"/>
+        <text x="613" y="304" fill="#34d399" font-size="12" text-anchor="middle">5,7</text>
+        <text x="661" y="52" fill="#fb7185" font-size="11" text-anchor="middle">timeout ↑</text>
+        <rect x="755" y="189" width="40" height="171" rx="3" fill="#34d399"/>
+        <text x="775" y="183" fill="#34d399" font-size="12" text-anchor="middle">368</text>
+        <text x="823" y="332" fill="#71717a" font-size="11" text-anchor="middle">✗ não</text>
+        <text x="823" y="346" fill="#71717a" font-size="11" text-anchor="middle">existe</text>
+      </g>
+      <g font-size="13" fill="#a1a1aa" text-anchor="middle">
+        <text x="151" y="382">Busca</text><text x="151" y="397" fill="#71717a" font-size="11">0 hop</text>
+        <text x="313" y="382">Empresas</text><text x="313" y="397" fill="#71717a" font-size="11">1 hop</text>
+        <text x="475" y="382">Intermediário</text><text x="475" y="397" fill="#71717a" font-size="11">2 hops</text>
+        <text x="637" y="382">Caminho</text><text x="637" y="397" fill="#71717a" font-size="11">variável</text>
+        <text x="799" y="382">PageRank</text><text x="799" y="397" fill="#71717a" font-size="11">grafo</text>
+      </g>
+    </svg>
+    <p class="note" style="text-align:center; margin-top:.3em">Na busca: <b style="color:var(--amber)">empate</b>. Depois a distância verde↔vermelho — a vantagem do grafo — <b style="color:var(--mut)">cresce</b> da esquerda pra direita.</p>
+  </div>
+</section>
+
+<!-- 10 · INDEX-FREE ADJACENCY -->
+<section class="slide" data-notes="<h3>Index-free adjacency · 1min · o PORQUÊ</h3><p>O conceito que explica todos os números. Cada nó guarda fisicamente ponteiros diretos pros vizinhos — uma agenda em cada nó. Seguir uma aresta é O(1) local: 2 milhões ou 2 bilhões de nós, mesmo custo. Por isso o multi-hop não degrada.</p><p>Analogia: pra ver os amigos de um amigo no Instagram, você abre o perfil dele — a lista já está ali (o nó aponta direto pros vizinhos). O jeito relacional seria, a cada amigo, varrer uma planilha com TODAS as amizades da plataforma e filtrar. Com ‘amigo do amigo do amigo’, trava.</p><p>Se errar este conceito, perde credibilidade. Domine.</p>">
+  <h2><span class="num">07</span>Por quê? Index-free adjacency</h2>
+  <div class="body cols center">
+    <div>
+      <p class="lead">Cada nó guarda <b>ponteiros diretos</b> pros vizinhos. Seguir uma aresta é <b>O(1) local</b> — independe do tamanho do banco.</p>
+      <ul>
+        <li><b>Grafo:</b> o pulo custa o mesmo com 2 mil ou 2 bilhões de nós</li>
+        <li><b>SQL:</b> cada hop é um JOIN que varre a tabela de novo</li>
+      </ul>
+      <p class="note">Por isso a vantagem do grafo <b>cresce</b> com a profundidade.</p>
+    </div>
+    <div class="analogy">
+      <span class="h">analogia da rede social</span>
+      <b>Grafo</b> = abrir o perfil de alguém no Instagram: a lista de quem ele segue <b>já está ali</b>, na mão. Um pulo, instantâneo.<br><br>
+      <b>JOIN do SQL</b> = a cada amigo, abrir uma planilha com <b>todas as amizades da plataforma inteira</b> e filtrar.<br><br>
+      Com bilhões de linhas, filtrar uma vez já dói. "Amigo do amigo do amigo" trava.
+    </div>
+  </div>
+</section>
+
+<!-- 11 · ALGORITMOS GDS -->
+<section class="slide" data-notes="<h3>Algoritmos GDS · 1min30 · AO VIVO</h3><p>O grafo não só consulta, ele analisa a estrutura. <b>PageRank</b> = os nós mais influentes (o algoritmo do Google). <b>Louvain</b> = detecção de comunidades: acha automaticamente grupos que se conectam muito entre si e pouco com o resto — tipo seus amigos da facul vs do trabalho formam ‘bolhas’ separadas. Numa investigação, revela redes ocultas (uma família + suas empresas + o escritório que todos usaram).</p><p><b>Onde mostrar:</b> 1) busque alguém e clique pra abrir a vizinhança; 2) aba <b>Algoritmos</b> (painel esquerdo); 3) botão <b>Louvain (comunidades)</b> → o grafo se repinta, cada comunidade com uma cor. O PageRank lista um ranking.</p><p>Em SQL puro não existe — precisaria exportar pra Python/Spark. Dica: rode numa pessoa comum (Albrecht), não num hub gigante. Testado: PageRank 65ms, Louvain 139 nós em 13 comunidades.</p>">
+  <h2><span class="num">08</span>Algoritmos de grafo (GDS)</h2>
+  <div class="body cols center">
+    <div>
+      <ul>
+        <li><b>PageRank</b> — o algoritmo do Google: os nós mais <b>influentes</b></li>
+        <li><b>Louvain</b> — acha <b>comunidades</b>: grupos muito ligados entre si (ex.: uma família + suas empresas + o escritório em comum)</li>
+        <li><b>Caminhos / centralidade</b> — nativos</li>
+      </ul>
+      <div class="demo">
+        <div class="h">▶ ao vivo (numa pessoa comum!)</div>
+        <ul>
+          <li>Busca → clicar num nó → aba <b>Algoritmos</b></li>
+          <li><b>PageRank</b> → ranking · <b>Louvain</b> → repinta o grafo por cor de comunidade</li>
+        </ul>
+      </div>
+    </div>
+    <div>
+      <pre><span class="k">CALL</span> gds.pageRank.stream(<span class="s">'sub'</span>)
+<span class="k">YIELD</span> nodeId, score
+<span class="k">RETURN</span> gds.util.asNode(nodeId).name,
+       score
+<span class="k">ORDER BY</span> score <span class="k">DESC</span>;</pre>
+      <p class="big" style="margin-top:1.2em; font-size:clamp(1.1rem,2vw,1.6rem)">Em SQL puro:<br><span style="color:var(--rose)">não há equivalente.</span></p>
+    </div>
+  </div>
+</section>
+
+<!-- ░░ CONCLUSÃO ░░ -->
+<section class="slide title" data-notes="<h3>Conclusão · 45s</h3><p>A tradução de SQL pra Cypher é trivial; o desempenho, não. Vai do empate na busca rasa às centenas de vezes nos multi-hop, até onde o SQL não termina nem consegue expressar. Quanto mais a pergunta é sobre conexões, mais o grafo ganha.</p><p>Lembrete de equilíbrio: grafo não substitui o relacional — a gente usou os dois (persistência poliglota). Stack: Neo4j 5.26 + GDS + APOC, Postgres 17, Next.js, tudo local em Docker. Agradeça e abra pra perguntas.</p>">
+  <div class="kicker">Conclusão</div>
+  <h1>Escrever nos dois é fácil.<br><span class="grad">Rodar, é outra história.</span></h1>
+  <p class="lead" style="margin-top:1.4em">Do empate na busca rasa às <b>centenas de vezes</b> nos multi-hop — até onde o SQL não termina nem consegue expressar.</p>
+  <p class="lead" style="margin-top:.8em">Quanto mais a <b>sua pergunta</b> é sobre <b class="grad">conexões</b>, mais o grafo ganha.</p>
+  <p class="note">Grafo não substitui o relacional — usamos os dois. Neo4j 5.26 · GDS · APOC · PostgreSQL 17 · Next.js · Docker.</p>
+</section>
+
+<!-- ░░ OBRIGADO ░░ -->
+<section class="slide title" data-notes="<h3>Encerramento</h3><p>Obrigado! Perguntas?</p><p>Munição (apêndice à frente): index-free adjacency (abrir perfil no Insta vs varrer a planilha global); caminho variável quebra o SQL por motivo algorítmico; quem usa de verdade; tabela do benchmark; 3/4/5 hops; quando usar.</p>">
+  <h1>Obrigado.<br><span class="grad">Perguntas?</span></h1>
+  <p class="lead" style="margin-top:1.2em">Banco de Dados 2 · UFPR · Tema 9 — Graph Databases</p>
+  <div class="legend">
+    <span class="pill">App · localhost:3000</span>
+    <span class="pill">Neo4j Browser · localhost:7474</span>
+    <span class="pill">ICIJ Offshore Leaks (ODbL)</span>
+  </div>
+</section>
+
+<!-- ░░░░░ APÊNDICE (backup p/ Q&A) ░░░░░ -->
+
+<!-- AX · OLÁ MUNDO / CYPHER (demo opcional) -->
+<section class="slide" data-notes="<h3>Apêndice · olá mundo (demo opcional, localhost:7474)</h3><p>Se quiser mostrar a linguagem na prática: CREATE grava dois nós e a seta; MATCH casa o padrão. O código parece o diagrama. Cypher virou padrão ISO (GQL) em 2024. Cole no Neo4j Browser ao vivo.</p>">
+  <div class="kicker apx">Apêndice · demo opcional (Neo4j Browser)</div>
+  <h2>"Olá, mundo" em Cypher</h2>
+  <div class="body cols center">
+    <div>
+      <p class="lead">A <b>"SQL dos grafos"</b>: declarativa e <b>ASCII-art</b> — <code style="font-family:var(--mono);color:var(--amber)">()</code> é nó, <code style="font-family:var(--mono);color:var(--amber)">-[]-></code> é relação.</p>
+      <p class="note">Padrão <b style="color:var(--mut)">ISO desde 2024</b> — o GQL, mesmo comitê do SQL.</p>
+    </div>
+    <div>
+      <pre><span class="c">// 1 · criar</span>
+<span class="k">CREATE</span> (ana<span class="f">:Pessoa</span>  {<span class="n">nome</span>:<span class="s">'Ana'</span>}),
+       (acme<span class="f">:Empresa</span> {<span class="n">nome</span>:<span class="s">'ACME'</span>}),
+       (ana)<span class="k">-[:TRABALHA_EM]-></span>(acme);
+
+<span class="c">// 2 · consultar (o código = o diagrama)</span>
+<span class="k">MATCH</span> (p<span class="f">:Pessoa</span>)<span class="k">-[:TRABALHA_EM]-></span>(e<span class="f">:Empresa</span>)
+<span class="k">RETURN</span> p.nome, e.nome;</pre>
+    </div>
+  </div>
+</section>
+
+<!-- A0 · CAMINHO MAIS CURTO (backup / demo opcional) -->
+<section class="slide" data-notes="<h3>Apêndice · caminho mais curto (demo opcional)</h3><p>Se sobrar tempo ou perguntarem do caminho: shortestPath é uma linha; em SQL é um CTE recursivo que estoura o timeout. Índice não resolve — é algorítmico. Demo testada: Albrecht → Michael J. Kamper, 4 saltos, 10ms (aba Algoritmos → caminho mais curto).</p>">
+  <div class="kicker apx">Apêndice · demo opcional</div>
+  <h2>Caminho mais curto entre 2 pessoas</h2>
+  <div class="body cols center">
+    <div>
+      <span class="tag cy">CYPHER · profundidade variável</span>
+      <pre><span class="k">MATCH</span> p = <span class="k">shortestPath</span>(
+        (a)<span class="k">-[*..6]-</span>(b) )
+<span class="k">RETURN</span> p;</pre>
+      <span class="tag sql" style="margin-top:1em">SQL · CTE recursivo</span>
+      <pre class="sql"><span class="k">WITH RECURSIVE</span> walk <span class="k">AS</span> (
+  <span class="c">/* reexpande a fronteira a cada nível */</span>
+) <span class="k">SELECT</span> ... <span class="c">-- e reza pra não estourar</span></pre>
+    </div>
+    <div>
+      <p class="big">1 linha <span style="color:var(--dim)">vs.</span><br>um CTE que <span style="color:var(--rose)">explode</span>.</p>
+      <p class="note"><b style="color:var(--mut)">Índice não resolve: é algorítmico.</b> Testado: 4 saltos em 10ms.</p>
+    </div>
+  </div>
+</section>
+
+<!-- A1 · QUEM USA -->
+<section class="slide" data-notes="<h3>Apêndice · quem usa</h3><p>Se perguntarem ‘quem usa isso de verdade?’. Google, Meta, LinkedIn, Netflix, bancos, ICIJ.</p>">
+  <div class="kicker apx">Apêndice · só se perguntarem</div>
+  <h2>Quem usa grafo de verdade</h2>
+  <div class="body">
+    <table>
+      <tbody>
+        <tr><td><b>Google</b></td><td>PageRank ranqueia páginas pela estrutura de links (+ Knowledge Graph)</td></tr>
+        <tr><td><b>Meta / Facebook</b></td><td>Social Graph — "amigos de amigos"</td></tr>
+        <tr><td><b>LinkedIn</b></td><td>conexões de 1º/2º/3º grau = distância em hops</td></tr>
+        <tr><td><b>Netflix / Amazon</b></td><td>recomendação usuário→produto→usuário</td></tr>
+        <tr><td><b>Bancos / cartões</b></td><td>fraude: contas "diferentes" que dividem telefone/device</td></tr>
+        <tr><td><b>ICIJ</b></td><td>Panama/Pandora Papers — o nosso dataset</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- A2 · BENCHMARK TABELA -->
+<section class="slide" data-notes="<h3>Apêndice · tabela do benchmark</h3><p>Os números exatos, se quiserem ver a tabela.</p>">
+  <div class="kicker apx">Apêndice · números exatos</div>
+  <h2>Benchmark — tabela completa</h2>
+  <div class="body">
+    <table>
+      <thead><tr><th>Pergunta</th><th>Hops</th><th>Cypher</th><th>SQL</th><th>Vencedor</th></tr></thead>
+      <tbody>
+        <tr><td>Buscar por nome</td><td class="mono">0</td><td class="mono">80,9 ms</td><td class="mono">70,0 ms</td><td class="tie">empate</td></tr>
+        <tr><td>Empresas controladas</td><td class="mono">1</td><td class="mono">2,8 ms</td><td class="mono">25,9 ms</td><td class="win">Cypher 9×</td></tr>
+        <tr><td>Mesmo intermediário</td><td class="mono">2</td><td class="mono">2,9 ms</td><td class="mono">567,6 ms</td><td class="win">Cypher 193×</td></tr>
+        <tr><td>Caminho mais curto</td><td class="mono">variável</td><td class="mono">5,7 ms</td><td class="bad">timeout &gt;20 s</td><td class="win">Cypher ✓</td></tr>
+        <tr><td>PageRank</td><td class="mono">grafo</td><td class="mono">367,9 ms</td><td class="bad">não existe</td><td class="win">Cypher ✓</td></tr>
+      </tbody>
+    </table>
+    <p class="note">Mesmo dataset · aquecimento + 5 repetições · <code style="font-family:var(--mono)">pnpm bench</code></p>
+  </div>
+</section>
+
+<!-- A3 · 3,4,5 HOPS -->
+<section class="slide" data-notes="<h3>Apêndice · 3,4,5 hops</h3><p>Se perguntarem ‘e se for mais fundo?’. Depende da densidade do nó. O SQL escala com densidade × profundidade; o Cypher fica constante.</p>">
+  <div class="kicker apx">Apêndice · "e se for mais fundo?"</div>
+  <h2>E com 3, 4, 5 hops?</h2>
+  <div class="body cols">
+    <div>
+      <p class="lead" style="margin-bottom:.4em">Nó <b>esparso</b> (~4 conexões)</p>
+      <table>
+        <thead><tr><th>Hops</th><th>Cypher</th><th>SQL</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">3</td><td class="mono">2,9 ms</td><td class="mono">0,5 ms</td></tr>
+          <tr><td class="mono">4</td><td class="mono">1,9 ms</td><td class="mono">0,8 ms</td></tr>
+          <tr><td class="mono">5</td><td class="mono">2,0 ms</td><td class="mono">3,0 ms</td></tr>
+          <tr><td class="mono">6</td><td class="mono">2,0 ms</td><td class="bad">25,7 ms</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div>
+      <p class="lead" style="margin-bottom:.4em">Nó <b>denso / hub</b></p>
+      <table>
+        <thead><tr><th>Hops</th><th>Cypher</th><th>SQL</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">2</td><td class="mono">7,4 ms</td><td class="mono">182 ms</td></tr>
+          <tr><td class="mono">3</td><td class="mono">6,8 ms</td><td class="bad">timeout</td></tr>
+          <tr><td class="mono">4</td><td class="mono">8,0 ms</td><td class="bad">timeout</td></tr>
+          <tr><td class="mono">5</td><td class="mono">6,8 ms</td><td class="bad">timeout</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <p class="note" style="text-align:center">O SQL escala com <b>densidade × profundidade</b>. O Cypher fica ~constante.</p>
+</section>
+
+<!-- A4 · QUANDO USAR -->
+<section class="slide" data-notes="<h3>Apêndice · quando usar</h3><p>Trade-offs. Persistência poliglota: usar os dois, cada um no que é bom.</p>">
+  <div class="kicker apx">Apêndice · trade-offs</div>
+  <h2>Quando usar grafo (e quando não)</h2>
+  <div class="body cols">
+    <div>
+      <span class="tag cy">grafo brilha</span>
+      <ul>
+        <li>Relacionamentos <b>profundos e variáveis</b></li>
+        <li>Caminhos, padrões de conexão</li>
+        <li>Recomendação, fraude, knowledge graph</li>
+      </ul>
+    </div>
+    <div>
+      <span class="tag sql">relacional ganha</span>
+      <ul>
+        <li>Dados <b>tabulares</b>, agregações em colunas</li>
+        <li>Relatórios, BI, somas e médias</li>
+        <li>Transações simples e bem normalizadas</li>
+      </ul>
+    </div>
+  </div>
+  <p class="note" style="text-align:center"><b style="color:var(--mut)">Persistência poliglota</b> — cada banco no que faz melhor. Foi o que fizemos.</p>
+</section>
+
+</div>
+
+<div id="count"></div>
+<div id="hint">← → navegar · N notas · F tela cheia</div>
+<div id="notes"></div>
+
+<script>
+  const slides=[...document.querySelectorAll('.slide')];
+  const bar=document.getElementById('bar'),count=document.getElementById('count'),notes=document.getElementById('notes');
+  let i=0,notesOn=false;
+  function render(){
+    slides.forEach((s,k)=>s.classList.toggle('active',k===i));
+    bar.style.width=((i+1)/slides.length*100)+'%';
+    count.textContent=(i+1)+' / '+slides.length;
+    if(notesOn) showNotes();
+  }
+  function showNotes(){
+    const n=slides[i].dataset.notes;
+    notes.innerHTML=n?('<h3>🎙 Roteiro — slide '+(i+1)+'</h3>'+n):'<h3>🎙 Roteiro</h3><p>(sem notas)</p>';
+    notes.classList.add('on');
+  }
+  function go(d){i=Math.max(0,Math.min(slides.length-1,i+d));render()}
+  document.addEventListener('keydown',e=>{
+    if(e.key==='ArrowRight'||e.key==='ArrowDown'||e.key===' '||e.key==='PageDown'){e.preventDefault();go(1)}
+    else if(e.key==='ArrowLeft'||e.key==='ArrowUp'||e.key==='PageUp'){e.preventDefault();go(-1)}
+    else if(e.key==='Home'){i=0;render()}
+    else if(e.key==='End'){i=slides.length-1;render()}
+    else if(e.key.toLowerCase()==='n'){notesOn=!notesOn;notesOn?showNotes():notes.classList.remove('on')}
+    else if(e.key.toLowerCase()==='f'){document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen()}
+  });
+  document.addEventListener('click',e=>{if(e.target.closest('#notes'))return; go(e.clientX>innerWidth/2?1:-1)});
+  render();
+</script>
+</body>
+</html>
